@@ -3,12 +3,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>NSImperialism</title>
+    <title>NSImperialism (Alpha)</title>
     <link rel="stylesheet" href="/assets/style.css" />
   </head>
   <body>
     <main>
-      <h1>NSImperialism</h1>
+      <h1>NSImperialism (Alpha)</h1>
       <header>
         <form action="/search" method="GET">
           <input
@@ -21,9 +21,8 @@
           />
         </form>
         {{ if .Nation }}
-        <h2>Nation: {{.Nation.Name }}</h2>
-        <img src="{{ .Nation.FlagURL }}" width="100"/>
-        <div>Defense Forces: {{.Nation.DefenseForces }}</div>
+        <h2><img src="{{ .Nation.FlagURL }}" height="50"/> Nation: {{.Nation.Name }}</h2>
+        <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
         {{ end }}
         <a href="https://github.com/brickman1444/NSImperialism" class="button github-button">View on GitHub</a>
       </header>
