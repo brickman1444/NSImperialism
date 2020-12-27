@@ -13,6 +13,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	indexTemplate.Execute(w, nil)
 }
 
+type Page struct {
+	Query  string
+	Nation *Nation
+}
+
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	var indexTemplate = template.Must(template.ParseFiles("index.html"))
@@ -26,15 +31,19 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	params := url.Query()
 	searchQuery := params.Get("q")
 
-	_, err = GetStandardData(searchQuery)
+	nation, err := GetNationData(searchQuery)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	fmt.Printf(searchQuery)
+	page := &Page{searchQuery, nation}
 
-	indexTemplate.Execute(w, nil)
+	err = indexTemplate.Execute(w, page)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 }
 
 func main() {

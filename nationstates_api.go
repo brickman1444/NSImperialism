@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,11 +12,12 @@ import (
 )
 
 type Nation struct {
-	Name string
-	Flag string
+	Name          string `xml:"NAME"`
+	FlagURL       string `xml:"FLAG"`
+	DefenseForces string
 }
 
-func GetStandardData(nationName string) (*Nation, error) {
+func GetNationData(nationName string) (*Nation, error) {
 
 	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?nation=%s", url.QueryEscape(nationName))
 	request, err := http.NewRequest("GET", url, nil)
@@ -42,7 +44,13 @@ func GetStandardData(nationName string) (*Nation, error) {
 		return nil, err
 	}
 
-	fmt.Println(string(body))
+	//fmt.Println(string(body))
 
-	return nil, nil
+	nation := &Nation{}
+	err = xml.Unmarshal(body, nation)
+	if err != nil {
+		return nil, err
+	}
+
+	return nation, nil
 }
