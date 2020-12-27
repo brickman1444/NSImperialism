@@ -14,15 +14,17 @@
           <input
             autofocus
             class="search-input"
-            value=""
+            value="{{ .Query }}"
             placeholder="Enter a nation name"
             type="search"
             name="q"
           />
         </form>
-        <h2>Nation: the Mechalus</h2>
-        <img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" width="100"/>
-        <div>Defense Forces: 32%</div>
+        {{ if .Nation }}
+        <h2>Nation: {{.Nation.Name }}</h2>
+        <img src="{{ .NationFlagURL }}" width="100"/>
+        <div>Defense Forces: {{ .Nation.DefenseForcesPercent }}</div>
+        {{ end }}
         <a href="https://github.com/brickman1444/NSImperialism" class="button github-button">View on GitHub</a>
       </header>
     </main>
