@@ -1,11 +1,14 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("<h1>Hello World!</h1>"))
+
+	var indexTemplate = template.Must(template.ParseFiles("index.html"))
+	indexTemplate.Execute(w, nil)
 }
 
 func main() {
