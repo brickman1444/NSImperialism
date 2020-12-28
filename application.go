@@ -21,7 +21,7 @@ type Page struct {
 	Nation      *nationstates_api.Nation
 	Belligerent *nationstates_api.Nation
 	ThirdParty  *nationstates_api.Nation
-	Grid        *grid.Grid
+	Grid        *grid.RenderedGrid
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,9 +55,16 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	grid := grid.Get()
+	grid := &grid.Grid{}
 
-	page := &Page{searchQuery, nation, belligerent, thirdParty, grid}
+	grid.Rows[1].Cells[1].ResidentNation = nation
+	grid.Rows[2].Cells[1].ResidentNation = nation
+	grid.Rows[3].Cells[2].ResidentNation = thirdParty
+	grid.Rows[3].Cells[3].ResidentNation = belligerent
+
+	renderedGrid := grid.Render()
+
+	page := &Page{searchQuery, nation, belligerent, thirdParty, renderedGrid}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
