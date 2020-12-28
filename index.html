@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>NSImperialism (Alpha)</title>
-    <link rel="stylesheet" href="/assets/style.css?ver=0" />
+    <link rel="stylesheet" href="/assets/uswds-2.10.0/css/usdws.css" />
   </head>
   <body class="usa-section--dark">
     <main class="usa-prose">
@@ -29,27 +29,29 @@
         <h2><img src="{{ .Nation.FlagURL }}" height="50"/><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
         <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
         <table class="usa-table">
-          <tbody>
+          <thead>
             <tr>
+              <th scope="col"></th>
+              <th scope="col">A</th>
+              <th scope="col">B</th>
+              <th scope="col">C</th>
+            </tr>
+          </thead>
+            <tbody>
+            <tr>
+              <th scope="row">1</th>
+              <td><img src="{{ .Nation.FlagURL }}" height="25"/></td>
               <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row">2</th>
               <td></td>
               <td></td>
               <td></td>
             </tr>
             <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
+              <th scope="row">3</th>
               <td></td>
               <td></td>
               <td></td>
@@ -59,7 +61,7 @@
           {{ end }}
       </body>
       <footer class="usa-footer">
-        <a href="https://github.com/brickman1444/NSImperialism" class="button github-button">View on GitHub</a>
+        <a href="https://github.com/brickman1444/NSImperialism" class="usa-link--external">View on GitHub</a>
       </footer>
     </main>
   </body>
