@@ -1,4 +1,4 @@
-package main
+package nationstates_api
 
 import (
 	"encoding/xml"

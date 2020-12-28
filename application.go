@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+
+	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +17,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 type Page struct {
 	Query  string
-	Nation *Nation
+	Nation *nationstates_api.Nation
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +33,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	params := url.Query()
 	searchQuery := params.Get("q")
 
-	nation, err := GetNationData(searchQuery)
+	nation, err := nationstates_api.GetNationData(searchQuery)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
