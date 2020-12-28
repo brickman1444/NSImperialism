@@ -4,16 +4,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>NSImperialism (Alpha)</title>
-    <link rel="stylesheet" href="/assets/style.css" />
+    <link rel="stylesheet" href="/assets/style.css?ver=0" />
   </head>
-  <body>
-    <main>
-      <h1>NSImperialism (Alpha)</h1>
-      <header>
+  <body class="usa-section--dark">
+    <main class="usa-prose">
+      <header class="usa-header">
+        <h1>NSImperialism (Alpha)</h1>
         <form action="/search" method="GET">
           <input
             autofocus
-            class="search-input"
+            class="usa-search"
             value="{{ .Query }}"
             placeholder="Enter a nation name"
             type="search"
@@ -24,8 +24,8 @@
       <body>
         {{ if .Nation }}
         <h2><img src="{{ .Nation.FlagURL }}" height="50"/> Nation: {{.Nation.Name }}</h2>
-        <div>♜ Defense Forces: {{.Nation.GetDefenseForces }}</div>
-        <table>
+        <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
+        <table class="usa-table">
           <tbody>
             <tr>
               <td></td>

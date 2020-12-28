@@ -54,5 +54,9 @@ func main() {
 
 	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/", indexHandler)
+
+	fileServer := http.FileServer(http.Dir("assets"))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", fileServer))
+
 	http.ListenAndServe(":5000", mux)
 }
