@@ -5,9 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>NSImperialism (Alpha)</title>
     <link rel="stylesheet" href="/assets/uswds-2.10.0/css/usdws.css" />
+    <link rel="stylesheet" href="/assets/stylesheets/style.css?ver=2" />
   </head>
   <body class="usa-section--dark">
-    <main class="usa-prose">
+    <main>
       <header class="usa-header">
         <h1><a href="/">NSImperialism (Alpha)</a></h1>
       </header>
@@ -42,30 +43,31 @@
             <tbody>
             <tr>
               <th scope="row">1</th>
-              <td><img src="{{ .Nation.FlagURL }}" height="25"/></td>
+              <td><img src="{{ .Nation.FlagURL }}" class="flag-thumb"/></td>
               <td></td>
               <td></td>
             </tr>
             <tr>
               <th scope="row">2</th>
-              <td><img src="{{ .Nation.FlagURL }}" height="25"/></td>
+              <td><img src="{{ .Nation.FlagURL }}" class="flag-thumb"/>⚔️<img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/></td>
               <td></td>
               <td></td>
             </tr>
             <tr>
               <th scope="row">3</th>
               <td></td>
-              <td><img src="https://www.nationstates.net/images/flags/Namibia.png" height="25"/></td>
-              <td><img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" height="25"/></td>
+              <td><img src="https://www.nationstates.net/images/flags/Namibia.png" class="flag-thumb"/></td>
+              <td><img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/></td>
             </tr>
           </tbody>
           </table>
           <h2>Wars</h2>
           <h3>The Testlandian Conquest of A2</h3>
-          <div>Attacker: The дСвобода Мысл of Testlandia</div>
-          <div>Defender: {{.Nation.Name }}</div>
-          <div>Warscore: 1% in favor of {{.Nation.Name }}</div>
-          <div>Warscore per day: 21.25% in favor of The дСвобода Мысл of Testlandia</div>
+          <div>Start Year: 0 (1 Year ago)</div>
+          <div>Attacker: <img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/>The дСвобода Мысл of Testlandia</div>
+          <div>Defender: <img src="{{ .Nation.FlagURL }}" class="flag-thumb"/>{{.Nation.Name }}</div>
+          <div>Warscore: <span class="favorable">1%</span> in favor of <img src="{{ .Nation.FlagURL }}" class="flag-thumb"/>{{.Nation.Name }}</div>
+          <div>Warscore per day: <span class="unfavorable">21.25%</span> in favor of <img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/>The дСвобода Мысл of Testlandia</div>
           {{ end }}
       </body>
       <footer class="usa-footer">
