@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/brickman1444/NSImperialism/grid"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
 
@@ -20,6 +21,7 @@ type Page struct {
 	Nation      *nationstates_api.Nation
 	Belligerent *nationstates_api.Nation
 	ThirdParty  *nationstates_api.Nation
+	Grid        *grid.Grid
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +55,9 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, belligerent, thirdParty}
+	grid := grid.Get()
+
+	page := &Page{searchQuery, nation, belligerent, thirdParty, grid}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {

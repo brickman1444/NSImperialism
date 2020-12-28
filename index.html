@@ -32,29 +32,39 @@
         <h2>Map</h2>
         <div>Year: 1</div>
         <table class="usa-table">
-          <thead>
+          <tbody>
+            {{ range .Grid.Rows }}
             <tr>
-              <th scope="col"></th>
-              <th scope="col">A</th>
-              <th scope="col">B</th>
-              <th scope="col">C</th>
+              {{ range .Cells }}
+              <td>{{ .Text }}</td>
+              {{ end }}
             </tr>
-          </thead>
-            <tbody>
+            {{ end }}
+          </tbody>
+        </table>
+
+        <table class="usa-table">
+          <tbody>
             <tr>
-              <th scope="row">1</th>
+              <td></td>
+              <td>A</td>
+              <td>B</td>
+              <td>C</td>
+            </tr>
+            <tr>
+              <td>1</td>
               <td>{{ .Nation.FlagThumbnail }}</td>
               <td>❓</td>
               <td>❓</td>
             </tr>
             <tr>
-              <th scope="row">2</th>
+              <td>2</td>
               <td>{{ .Nation.FlagThumbnail }}⚔️{{ .Belligerent.FlagThumbnail }}</td>
               <td>❓</td>
               <td>❓</td>
             </tr>
             <tr>
-              <th scope="row">3</th>
+              <td>3</td>
               <td>❓</td>
               <td>{{ .ThirdParty.FlagThumbnail }}</td>
               <td>{{ .Belligerent.FlagThumbnail }}</td>
