@@ -28,6 +28,8 @@
         {{ if .Nation }}
         <h2><img src="{{ .Nation.FlagURL }}" height="50"/><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
         <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
+        <h2>Map</h2>
+        <div>Year: 1</div>
         <table class="usa-table">
           <thead>
             <tr>
@@ -46,7 +48,7 @@
             </tr>
             <tr>
               <th scope="row">2</th>
-              <td></td>
+              <td><img src="{{ .Nation.FlagURL }}" height="25"/></td>
               <td></td>
               <td></td>
             </tr>
@@ -58,6 +60,12 @@
             </tr>
           </tbody>
           </table>
+          <h2>Wars</h2>
+          <h3>The Testlandian Conquest of A2</h3>
+          <div>Attacker: The дСвобода Мысл of Testlandia</div>
+          <div>Defender: {{.Nation.Name }}</div>
+          <div>Warscore: 1% in favor of {{.Nation.Name }}</div>
+          <div>Warscore per day: 21.25% in favor of The дСвобода Мысл of Testlandia</div>
           {{ end }}
       </body>
       <footer class="usa-footer">
