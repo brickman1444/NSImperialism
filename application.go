@@ -16,8 +16,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Page struct {
-	Query  string
-	Nation *nationstates_api.Nation
+	Query       string
+	Nation      *nationstates_api.Nation
+	Belligerent *nationstates_api.Nation
+	ThirdParty  *nationstates_api.Nation
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +41,19 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation}
+	belligerent, err := nationstates_api.GetNationData("testlandia")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	thirdParty, err := nationstates_api.GetNationData("nationstates_department_of_logistics")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	page := &Page{searchQuery, nation, belligerent, thirdParty}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
