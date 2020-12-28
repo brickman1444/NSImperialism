@@ -43,13 +43,13 @@
             <tbody>
             <tr>
               <th scope="row">1</th>
-              <td><img src="{{ .Nation.FlagURL }}" class="flag-thumb"/></td>
+              <td>{{ .Nation.FlagThumbnail }}</td>
               <td></td>
               <td></td>
             </tr>
             <tr>
               <th scope="row">2</th>
-              <td><img src="{{ .Nation.FlagURL }}" class="flag-thumb"/>⚔️<img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/></td>
+              <td>{{ .Nation.FlagThumbnail }}⚔️<img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/></td>
               <td></td>
               <td></td>
             </tr>
@@ -65,8 +65,8 @@
           <h3>The Testlandian Conquest of A2</h3>
           <div>Start Year: 0 (1 Year ago)</div>
           <div>Attacker: <img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/>The дСвобода Мысл of Testlandia</div>
-          <div>Defender: <img src="{{ .Nation.FlagURL }}" class="flag-thumb"/>{{.Nation.Name }}</div>
-          <div>Warscore: <span class="favorable">1%</span> in favor of <img src="{{ .Nation.FlagURL }}" class="flag-thumb"/>{{.Nation.Name }}</div>
+          <div>Defender: {{.Nation.FlagAndName }}</div>
+          <div>Warscore: <span class="favorable">1%</span> in favor of {{.Nation.FlagAndName }}</div>
           <div>Warscore per day: <span class="unfavorable">21.25%</span> in favor of <img src="https://www.nationstates.net/images/flags/uploads/testlandia__632510.png" class="flag-thumb"/>The дСвобода Мысл of Testlandia</div>
           {{ end }}
       </body>

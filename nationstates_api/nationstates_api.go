@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -34,6 +35,14 @@ func (nation *Nation) GetDefenseForces() int {
 
 func (nation *Nation) GetURL() string {
 	return fmt.Sprintf("https://www.nationstates.net/nation=%s", nation.Id)
+}
+
+func (nation *Nation) FlagAndName() template.HTML {
+	return template.HTML(fmt.Sprintf("<img src=\"%s\" class=\"flag-thumb\"/>%s", nation.FlagURL, nation.Name))
+}
+
+func (nation *Nation) FlagThumbnail() template.HTML {
+	return template.HTML(fmt.Sprintf("<img src=\"%s\" class=\"flag-thumb\"/>", nation.FlagURL))
 }
 
 func ParseNation(xmlData []byte) (*Nation, error) {
