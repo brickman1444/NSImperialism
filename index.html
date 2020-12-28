@@ -26,7 +26,7 @@
           </form>
         </div>
         {{ if .Nation }}
-        <h2><img src="{{ .Nation.FlagURL }}" height="50"/> Nation: {{.Nation.Name }}</h2>
+        <h2><img src="{{ .Nation.FlagURL }}" height="50"/><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
         <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
         <table class="usa-table">
           <tbody>

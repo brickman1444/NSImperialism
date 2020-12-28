@@ -24,4 +24,5 @@ func TestParseNation(t *testing.T) {
 	assert.Equal(t, "the Mechalus", nation.Name)
 	assert.Equal(t, "https://www.nationstates.net/images/flags/uploads/the_mechalus__47928.png", nation.FlagURL)
 	assert.Equal(t, 86, nation.GetDefenseForces())
+	assert.Equal(t, "https://www.nationstates.net/nation=the_mechalus", nation.GetURL())
 }

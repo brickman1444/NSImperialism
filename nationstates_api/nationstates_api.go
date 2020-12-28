@@ -17,6 +17,7 @@ type CensusScale struct {
 }
 
 type Nation struct {
+	Id           string        `xml:"id,attr"`
 	Name         string        `xml:"NAME"`
 	FlagURL      string        `xml:"FLAG"`
 	CensusScales []CensusScale `xml:"CENSUS>SCALE"`
@@ -29,6 +30,10 @@ func (nation *Nation) GetDefenseForces() int {
 		}
 	}
 	return 0
+}
+
+func (nation *Nation) GetURL() string {
+	return fmt.Sprintf("https://www.nationstates.net/nation=%s", nation.Id)
 }
 
 func ParseNation(xmlData []byte) (*Nation, error) {
