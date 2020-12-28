@@ -63,11 +63,17 @@
           </table>
           <h2>Wars</h2>
           <h3>The Testlandian Conquest of A2</h3>
-          <div>Start Year: 0 (1 Year ago)</div>
-          <div>Attacker: {{ .Belligerent.FlagAndName }}</div>
-          <div>Defender: {{.Nation.FlagAndName }}</div>
-          <div>Warscore: <span class="favorable">1%</span> in favor of {{.Nation.FlagAndName }}</div>
-          <div>Warscore per day: <span class="unfavorable">21.25%</span> in favor of {{ .Belligerent.FlagAndName }}</div>
+          <dl>
+            <dt>Start Year</dt>
+            <dd>Year 0 (1 Year ago)</dd>
+            <dt>Attacker</dt>
+            <dd>{{ .Belligerent.FlagAndName }}</dd>
+            <dt>Defender</dt>
+            <dd>{{.Nation.FlagAndName }}</dd>
+            <dt>Warscore</dt>
+            <dd><span class="favorable">1%</span> in favor of {{.Nation.FlagAndName }}</dd>
+            <dd><span class="unfavorable">+21.25%</span> per year</dd>
+          </dl>
           {{ end }}
       </body>
       <footer class="usa-footer">
