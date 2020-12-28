@@ -9,8 +9,11 @@
   <body class="usa-section--dark">
     <main class="usa-prose">
       <header class="usa-header">
-        <h1>NSImperialism (Alpha)</h1>
-        <form action="/search" method="GET">
+        <h1><a href="/">NSImperialism (Alpha)</a></h1>
+      </header>
+      <body>
+        <div>
+          <form action="/search" method="GET">
           <input
             autofocus
             class="usa-search"
@@ -19,9 +22,9 @@
             type="search"
             name="q"
           />
-        </form>
-      </header>
-      <body>
+          <button type="submit" class="usa-button">Submit</button>
+          </form>
+        </div>
         {{ if .Nation }}
         <h2><img src="{{ .Nation.FlagURL }}" height="50"/> Nation: {{.Nation.Name }}</h2>
         <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
@@ -55,7 +58,7 @@
           </table>
           {{ end }}
       </body>
-      <footer>
+      <footer class="usa-footer">
         <a href="https://github.com/brickman1444/NSImperialism" class="button github-button">View on GitHub</a>
       </footer>
     </main>
