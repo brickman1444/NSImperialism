@@ -7,10 +7,10 @@ import (
 )
 
 func TestParseNation(t *testing.T) {
-	// https://www.nationstates.net/cgi-bin/api.cgi?nation=the_mechalus;q=census+name+flag;scale=46;mode=prank
+	// https://www.nationstates.net/cgi-bin/api.cgi?nation=the_mechalus;q=census+fullname+flag;scale=46;mode=prank
 	xml := `
 	<NATION id="the_mechalus">
-		<NAME>the Mechalus</NAME>
+		<FULLNAME>The Empire of the Mechalus</FULLNAME>
 		<FLAG>https://www.nationstates.net/images/flags/uploads/the_mechalus__47928.png</FLAG>
 		<CENSUS>
 			<SCALE id="46">
@@ -21,7 +21,7 @@ func TestParseNation(t *testing.T) {
 
 	nation, err := ParseNation([]byte(xml))
 	assert.NoError(t, err)
-	assert.Equal(t, "the Mechalus", nation.Name)
+	assert.Equal(t, "The Empire of the Mechalus", nation.Name)
 	assert.Equal(t, "https://www.nationstates.net/images/flags/uploads/the_mechalus__47928.png", nation.FlagURL)
 	assert.Equal(t, 86, nation.GetDefenseForces())
 	assert.Equal(t, "https://www.nationstates.net/nation=the_mechalus", nation.GetURL())
