@@ -20,12 +20,44 @@
             name="q"
           />
         </form>
+      </header>
+      <body>
         {{ if .Nation }}
         <h2><img src="{{ .Nation.FlagURL }}" height="50"/> Nation: {{.Nation.Name }}</h2>
-        <div>Defense Forces: {{.Nation.GetDefenseForces }}</div>
-        {{ end }}
+        <div>♜ Defense Forces: {{.Nation.GetDefenseForces }}</div>
+        <table>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+          </table>
+          {{ end }}
+      </body>
+      <footer>
         <a href="https://github.com/brickman1444/NSImperialism" class="button github-button">View on GitHub</a>
-      </header>
+      </footer>
     </main>
   </body>
 </html>
