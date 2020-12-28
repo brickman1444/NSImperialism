@@ -52,5 +52,5 @@ func main() {
 
 	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/", indexHandler)
-	http.ListenAndServe(":3000", mux)
+	http.ListenAndServe(":5000", mux)
 }
