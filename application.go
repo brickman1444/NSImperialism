@@ -22,7 +22,7 @@ type Page struct {
 	Nation      *nationstates_api.Nation
 	Belligerent *nationstates_api.Nation
 	Grid        *grid.RenderedGrid
-	War         *war.War
+	Wars        []*war.War
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,9 +66,9 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	renderedGrid := grid.Render()
 
-	war := &war.War{Attacker: belligerent, Defender: nation, Score: -10, Name: "The Testlandian Conquest of A2"}
+	testWar := &war.War{Attacker: belligerent, Defender: nation, Score: -10, Name: "The Testlandian Conquest of A2"}
 
-	page := &Page{searchQuery, nation, belligerent, renderedGrid, war}
+	page := &Page{searchQuery, nation, belligerent, renderedGrid, []*war.War{testWar}}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {

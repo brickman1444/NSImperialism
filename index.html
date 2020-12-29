@@ -29,6 +29,8 @@
         {{ if .Nation }}
         <h2><img src="{{ .Nation.FlagURL }}" height="50"/><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
         <div>Defense Forces: Top {{.Nation.GetDefenseForces }}% in the world</div>
+        {{ end }}
+        {{ if .Grid }}
         <h2>Map</h2>
         <div>Year: 1</div>
         <table class="usa-table">
@@ -42,18 +44,22 @@
             {{ end }}
           </tbody>
         </table>
-          <h2>Wars</h2>
-          <h3>{{ .War.Name }}</h3>
-          <dl>
-            <dt>Attacker</dt>
-            <dd>{{ .War.Attacker.FlagAndName }}</dd>
-            <dt>Defender</dt>
-            <dd>{{.War.Defender.FlagAndName }}</dd>
-            <dt>Warscore</dt>
-            <dd>{{ .War.ScoreDescription }}</dd>
-            <dd>{{ .War.ScorePerYearDescription }}</dd>
-          </dl>
-          {{ end }}
+        {{ end }}
+        {{ if .Wars }}
+        <h2>Wars</h2>
+        {{ range .Wars }}
+        <h3>{{ .Name }}</h3>
+        <dl>
+          <dt>Attacker</dt>
+          <dd>{{ .Attacker.FlagAndName }}</dd>
+          <dt>Defender</dt>
+          <dd>{{.Defender.FlagAndName }}</dd>
+          <dt>Warscore</dt>
+          <dd>{{ .ScoreDescription }}</dd>
+          <dd>{{ .ScorePerYearDescription }}</dd>
+        </dl>
+        {{ end }}
+        {{ end }}
       </body>
       <footer class="usa-footer">
         <a href="https://github.com/brickman1444/NSImperialism" class="usa-link--external">View on GitHub</a>
