@@ -12,6 +12,7 @@ import (
 )
 
 var wars []*war.War = []*war.War{}
+var globalGrid *grid.Grid = &grid.Grid{}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -41,33 +42,11 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	nation, err := nationstates_api.GetNationData(searchQuery)
 	if err != nil {
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	belligerent, err := nationstates_api.GetNationData("testlandia")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	thirdParty, err := nationstates_api.GetNationData("nationstates_department_of_logistics")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	grid := &grid.Grid{}
-
-	grid.Rows[1].Cells[1].ResidentNation = nation
-	grid.Rows[2].Cells[1].ResidentNation = nation
-	grid.Rows[2].Cells[1].AttackerNation = belligerent
-	grid.Rows[3].Cells[2].ResidentNation = thirdParty
-	grid.Rows[3].Cells[3].ResidentNation = belligerent
-
-	renderedGrid := grid.Render()
-
-	page := &Page{searchQuery, nation, renderedGrid, wars}
+	page := &Page{searchQuery, nation, globalGrid.Render(), wars}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -94,7 +73,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: "The Testlandian Conquest of A2"})
 
-	page := &Page{"", nil, nil, wars}
+	page := &Page{"", nil, globalGrid.Render(), wars}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -106,6 +85,30 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	mux := http.NewServeMux()
+
+	mechalus, err := nationstates_api.GetNationData("the_mechalus")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	testlandia, err := nationstates_api.GetNationData("testlandia")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	logistics, err := nationstates_api.GetNationData("nationstates_department_of_logistics")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	globalGrid.Rows[1].Cells[1].ResidentNation = mechalus
+	globalGrid.Rows[2].Cells[1].ResidentNation = mechalus
+	globalGrid.Rows[2].Cells[1].AttackerNation = testlandia
+	globalGrid.Rows[3].Cells[2].ResidentNation = logistics
+	globalGrid.Rows[3].Cells[3].ResidentNation = testlandia
 
 	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/war", warHandler)
