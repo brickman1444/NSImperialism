@@ -1,69 +1,67 @@
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>NSImperialism (Alpha)</title>
-    <link rel="stylesheet" href="/assets/uswds-2.10.0/css/usdws.css" />
-    <link rel="stylesheet" href="/assets/stylesheets/style.css?ver=2" />
-  </head>
-  <body class="usa-section--dark">
-    <main>
-      <header class="usa-header">
-        <h1><a href="/">NSImperialism (Alpha)</a></h1>
-      </header>
-      <body>
-        <div>
-          <form action="/search" method="GET">
-          <input
-            autofocus
-            class="usa-search"
-            value="{{ .Query }}"
-            placeholder="Enter a nation name"
-            type="search"
-            name="q"
-          />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>NSImperialism (Alpha)</title>
+  <link rel="stylesheet" href="/assets/uswds-2.10.0/css/usdws.css" />
+  <link rel="stylesheet" href="/assets/stylesheets/style.css?ver=2" />
+</head>
+
+<body class="usa-section--dark">
+  <main>
+    <header class="usa-header">
+      <h1><a href="/">NSImperialism (Alpha)</a></h1>
+    </header>
+
+    <body>
+      <div>
+        <form action="/search" method="GET">
+          <input autofocus class="usa-search" value="{{ .Query }}" placeholder="Enter a nation name" type="search"
+            name="q" />
           <button type="submit" class="usa-button">Submit</button>
-          </form>
-        </div>
-        {{ if .Nation }}
-        <h2><img src="{{ .Nation.FlagURL }}" height="50"/><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
-        <div>Defense Forces: Top {{.Nation.GetDefenseForces }}% in the world</div>
-        {{ end }}
-        {{ if .Grid }}
-        <h2>Map</h2>
-        <div>Year: 1</div>
-        <table class="usa-table">
-          <tbody>
-            {{ range .Grid.Rows }}
-            <tr>
-              {{ range .Cells }}
-              <td>{{ .Text }}</td>
-              {{ end }}
-            </tr>
+        </form>
+      </div>
+      {{ if .Nation }}
+      <h2><img src="{{ .Nation.FlagURL }}" height="50" /><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
+      <div>Defense Forces: Top {{.Nation.GetDefenseForces }}% in the world</div>
+      {{ end }}
+      {{ if .Grid }}
+      <h2>Map</h2>
+      <div>Year: 1</div>
+      <table class="usa-table">
+        <tbody>
+          {{ range .Grid.Rows }}
+          <tr>
+            {{ range .Cells }}
+            <td>{{ .Text }}</td>
             {{ end }}
-          </tbody>
-        </table>
-        {{ end }}
-        {{ if .Wars }}
-        <h2>Wars</h2>
-        {{ range .Wars }}
-        <h3>{{ .Name }}</h3>
-        <dl>
-          <dt>Attacker</dt>
-          <dd>{{ .Attacker.FlagAndName }}</dd>
-          <dt>Defender</dt>
-          <dd>{{.Defender.FlagAndName }}</dd>
-          <dt>Warscore</dt>
-          <dd>{{ .ScoreDescription }}</dd>
-          <dd>{{ .ScorePerYearDescription }}</dd>
-        </dl>
-        {{ end }}
-        {{ end }}
-      </body>
-      <footer class="usa-footer">
-        <a href="https://github.com/brickman1444/NSImperialism" class="usa-link--external">View on GitHub</a>
-      </footer>
-    </main>
-  </body>
+          </tr>
+          {{ end }}
+        </tbody>
+      </table>
+      {{ end }}
+      {{ if .Wars }}
+      <h2>Wars</h2>
+      {{ range .Wars }}
+      <h3>{{ .Name }}</h3>
+      <dl>
+        <dt>Attacker</dt>
+        <dd>{{ .Attacker.FlagAndName }}</dd>
+        <dt>Defender</dt>
+        <dd>{{.Defender.FlagAndName }}</dd>
+        <dt>Warscore</dt>
+        <dd>{{ .ScoreDescription }}</dd>
+        <dd>{{ .ScorePerYearDescription }}</dd>
+      </dl>
+      {{ end }}
+      {{ end }}
+    </body>
+    <footer class="usa-footer">
+      <a href="https://github.com/brickman1444/NSImperialism" class="usa-link--external">View on GitHub</a>
+    </footer>
+  </main>
+</body>
+
 </html>
