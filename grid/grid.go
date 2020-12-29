@@ -75,3 +75,11 @@ func (grid *Grid) Render() *RenderedGrid {
 	}
 	return renderedGrid
 }
+
+func (grid *Grid) GetCoordinates(coordinatesString string) (int, int, error) {
+	return 0, 0, nil
+}
+
+func (grid *Grid) Colonize(colonizer nationstates_api.Nation, target string) error {
+	return nil
+}
