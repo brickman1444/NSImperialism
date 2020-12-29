@@ -18,11 +18,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Page struct {
-	Query       string
-	Nation      *nationstates_api.Nation
-	Belligerent *nationstates_api.Nation
-	Grid        *grid.RenderedGrid
-	Wars        []*war.War
+	Query  string
+	Nation *nationstates_api.Nation
+	Grid   *grid.RenderedGrid
+	Wars   []*war.War
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +67,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	testWar := &war.War{Attacker: belligerent, Defender: nation, Score: -10, Name: "The Testlandian Conquest of A2"}
 
-	page := &Page{searchQuery, nation, belligerent, renderedGrid, []*war.War{testWar}}
+	page := &Page{searchQuery, nation, renderedGrid, []*war.War{testWar}}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
