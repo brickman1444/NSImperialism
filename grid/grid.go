@@ -3,6 +3,8 @@ package grid
 import (
 	"fmt"
 	"html/template"
+	"strconv"
+	"unicode"
 
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
@@ -37,6 +39,16 @@ type RenderedGrid struct {
 
 func toCharStr(i int) string {
 	return string(rune('A' - 1 + i))
+}
+
+func toIndex(r rune) (int, error) {
+	if unicode.IsLetter(r) || unicode.IsUpper(r) {
+		return int(r - 'A' + 1), nil
+	} else if unicode.IsDigit(r) {
+		return strconv.Atoi(string(r))
+	} else {
+		return -1, fmt.Errorf("characters out of valid range")
+	}
 }
 
 func (grid *Grid) Render() *RenderedGrid {
@@ -77,7 +89,32 @@ func (grid *Grid) Render() *RenderedGrid {
 }
 
 func (grid *Grid) GetCoordinates(coordinatesString string) (int, int, error) {
-	return 0, 0, nil
+
+	if len(coordinatesString) != 2 {
+		return 0, 0, fmt.Errorf("Invalid string length %s", coordinatesString)
+	}
+
+	firstRune := rune(coordinatesString[0])
+	if firstRune < 'A' || firstRune > 'D' {
+		return 0, 0, fmt.Errorf("First character isn't an upper case character %s", coordinatesString)
+	}
+
+	secondRune := rune(coordinatesString[1])
+	if secondRune < '1' || secondRune > '4' {
+		return 0, 0, fmt.Errorf("Second character isn't a number %s", coordinatesString)
+	}
+
+	columnIndex, err := toIndex(firstRune)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	rowIndex, err := toIndex(secondRune)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return rowIndex, columnIndex, nil
 }
 
 func (grid *Grid) Colonize(colonizer nationstates_api.Nation, target string) error {
