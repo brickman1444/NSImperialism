@@ -85,7 +85,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		target = target[0:2]
 	}
 
-	warName := fmt.Sprintf("The %s War for %s", attacker.Name, target)
+	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
 
 	if attacker != nil && defender != nil && len(warName) != 0 {
 		wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: warName})

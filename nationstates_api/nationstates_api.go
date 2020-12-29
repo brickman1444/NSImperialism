@@ -23,6 +23,7 @@ type Nation struct {
 	Id           string        `xml:"id,attr"`
 	Name         string        `xml:"FULLNAME"`
 	FlagURL      string        `xml:"FLAG"`
+	Demonym      string        `xml:"DEMONYM"`
 	CensusScales []CensusScale `xml:"CENSUS>SCALE"`
 }
 
@@ -72,7 +73,7 @@ func GetNationData(nationName string) (*Nation, error) {
 		return nil, nil
 	}
 
-	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?nation=%s;q=census+fullname+flag;scale=46;mode=prank", url.QueryEscape(nationName))
+	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?nation=%s;q=census+fullname+flag+demonym;scale=46;mode=prank", url.QueryEscape(nationName))
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
