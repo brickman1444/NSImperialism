@@ -60,16 +60,6 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
 
-	defenderName := r.FormValue("defender")
-	defender, err := nationstates_api.GetNationData(defenderName)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	} else if defender == nil {
-		http.Error(w, fmt.Sprintf("%s not found", defenderName), http.StatusNotFound)
-		return
-	}
-
 	attackerName := r.FormValue("attacker")
 	attacker, err := nationstates_api.GetNationData(attackerName)
 	if err != nil {
@@ -81,8 +71,21 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	target := r.FormValue("target")
-	if len(target) > 2 {
-		target = target[0:2]
+	targetRowIndex, targetColumnIndex, err := globalGrid.GetCoordinates(target)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	defender := globalGrid.Rows[targetRowIndex].Cells[targetColumnIndex].ResidentNation
+	if defender == nil {
+		http.Error(w, fmt.Sprintf("No nation resides in %s", target), http.StatusBadRequest)
+		return
+	}
+
+	if attacker.Id == defender.Id {
+		http.Error(w, fmt.Sprintf("You can't attack yourself"), http.StatusBadRequest)
+		return
 	}
 
 	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
@@ -96,7 +99,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 
-	_, err := nationstates_api.GetNationData(r.FormValue("colonizer"))
+	colonizer, err := nationstates_api.GetNationData(r.FormValue("colonizer"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -105,6 +108,12 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 	target := r.FormValue("target")
 	if len(target) > 2 {
 		target = target[0:2]
+	}
+
+	err = globalGrid.Colonize(*colonizer, target)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
