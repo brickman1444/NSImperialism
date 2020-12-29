@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const CENSUSSCALEDEFENSEFORCES int = 46
+
 type CensusScale struct {
 	Id             int `xml:"id,attr"`
 	PercentageRank int `xml:"PRANK"`
@@ -26,11 +28,21 @@ type Nation struct {
 
 func (nation *Nation) GetDefenseForces() int {
 	for _, censusScale := range nation.CensusScales {
-		if censusScale.Id == 46 {
+		if censusScale.Id == CENSUSSCALEDEFENSEFORCES {
 			return censusScale.PercentageRank
 		}
 	}
 	return 0
+}
+
+func (nation *Nation) SetDefenseForces(percentageRank int) {
+	for censusIndex, censusScale := range nation.CensusScales {
+		if censusScale.Id == CENSUSSCALEDEFENSEFORCES {
+			nation.CensusScales[censusIndex].PercentageRank = percentageRank
+			return
+		}
+	}
+	nation.CensusScales = append(nation.CensusScales, CensusScale{CENSUSSCALEDEFENSEFORCES, percentageRank})
 }
 
 func (nation *Nation) GetURL() string {

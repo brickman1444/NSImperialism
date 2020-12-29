@@ -20,7 +20,6 @@ type Page struct {
 	Query       string
 	Nation      *nationstates_api.Nation
 	Belligerent *nationstates_api.Nation
-	ThirdParty  *nationstates_api.Nation
 	Grid        *grid.RenderedGrid
 }
 
@@ -65,7 +64,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	renderedGrid := grid.Render()
 
-	page := &Page{searchQuery, nation, belligerent, thirdParty, renderedGrid}
+	page := &Page{searchQuery, nation, belligerent, renderedGrid}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {

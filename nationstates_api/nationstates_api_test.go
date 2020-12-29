@@ -26,3 +26,13 @@ func TestParseNation(t *testing.T) {
 	assert.Equal(t, 86, nation.GetDefenseForces())
 	assert.Equal(t, "https://www.nationstates.net/nation=the_mechalus", nation.GetURL())
 }
+
+func TestDefenseCanBeSetAndGet(t *testing.T) {
+	nation := Nation{}
+
+	nation.SetDefenseForces(1)
+	assert.Equal(t, 1, nation.GetDefenseForces())
+
+	nation.SetDefenseForces(2)
+	assert.Equal(t, 2, nation.GetDefenseForces())
+}
