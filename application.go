@@ -11,6 +11,8 @@ import (
 	"github.com/brickman1444/NSImperialism/war"
 )
 
+var wars []*war.War = []*war.War{}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	var indexTemplate = template.Must(template.ParseFiles("index.html"))
@@ -65,13 +67,38 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	renderedGrid := grid.Render()
 
-	testWar := &war.War{Attacker: belligerent, Defender: nation, Score: -10, Name: "The Testlandian Conquest of A2"}
-
-	page := &Page{searchQuery, nation, renderedGrid, []*war.War{testWar}}
+	page := &Page{searchQuery, nation, renderedGrid, wars}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
-		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func warHandler(w http.ResponseWriter, r *http.Request) {
+
+	var indexTemplate = template.Must(template.ParseFiles("index.html"))
+
+	defender, err := nationstates_api.GetNationData("the_mechalus")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	attacker, err := nationstates_api.GetNationData("testlandia")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: "The Testlandian Conquest of A2"})
+
+	page := &Page{"", nil, nil, wars}
+
+	err = indexTemplate.Execute(w, page)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -81,6 +108,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/search", searchHandler)
+	mux.HandleFunc("/war", warHandler)
 	mux.HandleFunc("/", indexHandler)
 
 	fileServer := http.FileServer(http.Dir("assets"))

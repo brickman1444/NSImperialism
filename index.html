@@ -42,6 +42,9 @@
         </tbody>
       </table>
       {{ end }}
+      <form action="/war" method="POST">
+        <button type="submit" class="usa-button">Start War</button>
+      </form>
       {{ if .Wars }}
       <h2>Wars</h2>
       {{ range .Wars }}
