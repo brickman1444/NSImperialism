@@ -60,15 +60,23 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
 
-	defender, err := nationstates_api.GetNationData(r.FormValue("defender"))
+	defenderName := r.FormValue("defender")
+	defender, err := nationstates_api.GetNationData(defenderName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	} else if defender == nil {
+		http.Error(w, fmt.Sprintf("%s not found", defenderName), http.StatusNotFound)
+		return
 	}
 
-	attacker, err := nationstates_api.GetNationData(r.FormValue("attacker"))
+	attackerName := r.FormValue("attacker")
+	attacker, err := nationstates_api.GetNationData(attackerName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	} else if attacker == nil {
+		http.Error(w, fmt.Sprintf("%s not found", attackerName), http.StatusNotFound)
 		return
 	}
 
@@ -86,36 +94,29 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+func colonizeHandler(w http.ResponseWriter, r *http.Request) {
+
+	_, err := nationstates_api.GetNationData(r.FormValue("colonizer"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	target := r.FormValue("target")
+	if len(target) > 2 {
+		target = target[0:2]
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func main() {
 
 	mux := http.NewServeMux()
 
-	mechalus, err := nationstates_api.GetNationData("the_mechalus")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	testlandia, err := nationstates_api.GetNationData("testlandia")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	logistics, err := nationstates_api.GetNationData("nationstates_department_of_logistics")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	globalGrid.Rows[1].Cells[1].ResidentNation = mechalus
-	globalGrid.Rows[2].Cells[1].ResidentNation = mechalus
-	globalGrid.Rows[2].Cells[1].AttackerNation = testlandia
-	globalGrid.Rows[3].Cells[2].ResidentNation = logistics
-	globalGrid.Rows[3].Cells[3].ResidentNation = testlandia
-
 	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/war", warHandler)
+	mux.HandleFunc("/colonize", colonizeHandler)
 	mux.HandleFunc("/", indexHandler)
 
 	fileServer := http.FileServer(http.Dir("assets"))
