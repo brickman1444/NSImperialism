@@ -60,14 +60,6 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
 
-	var indexTemplate = template.Must(template.ParseFiles("index.html"))
-
-	/*err := r.ParseForm()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}*/
-
 	defender, err := nationstates_api.GetNationData(r.FormValue("defender"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -91,13 +83,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: warName})
 	}
 
-	page := &Page{"", nil, globalGrid.Render(), wars}
-
-	err = indexTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func main() {
