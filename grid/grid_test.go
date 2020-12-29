@@ -3,6 +3,7 @@ package grid
 import (
 	"testing"
 
+	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,4 +57,38 @@ func TestGetCoordinatesCovertsStringsToCoordinates(t *testing.T) {
 			assert.Equal(t, data.columnIndex, columnIndex)
 		})
 	}
+}
+
+func TestColonizingAnEmptyCellPutsTheColonizerInTheCell(t *testing.T) {
+	grid := Grid{}
+
+	assert.Nil(t, grid.Rows[1].Cells[1].ResidentNation)
+
+	nation := nationstates_api.Nation{}
+
+	grid.Colonize(nation, "A1")
+
+	assert.Equal(t, &nation, grid.Rows[1].Cells[1].ResidentNation)
+}
+
+func TestColonizingAnInvalidTargetProducesAnError(t *testing.T) {
+	grid := Grid{}
+	nation := nationstates_api.Nation{}
+
+	err := grid.Colonize(nation, "A0")
+
+	assert.Error(t, err)
+}
+
+func TestColonizingACellWithAResidentProducesAnErrorAndDoesntChangeTheGrid(t *testing.T) {
+	grid := Grid{}
+	firstNation := nationstates_api.Nation{}
+
+	err := grid.Colonize(firstNation, "A1")
+	assert.NoError(t, err)
+
+	secondNation := nationstates_api.Nation{}
+	err = grid.Colonize(secondNation, "A1")
+	assert.Error(t, err)
+	assert.Equal(t, &firstNation, grid.Rows[1].Cells[1].ResidentNation)
 }

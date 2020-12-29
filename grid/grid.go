@@ -118,5 +118,17 @@ func (grid *Grid) GetCoordinates(coordinatesString string) (int, int, error) {
 }
 
 func (grid *Grid) Colonize(colonizer nationstates_api.Nation, target string) error {
+
+	rowIndex, columnIndex, err := grid.GetCoordinates(target)
+	if err != nil {
+		return err
+	}
+
+	if grid.Rows[rowIndex].Cells[columnIndex].ResidentNation != nil {
+		return fmt.Errorf("A nation is already resident at %s", target)
+	}
+
+	grid.Rows[rowIndex].Cells[columnIndex].ResidentNation = &colonizer
+
 	return nil
 }
