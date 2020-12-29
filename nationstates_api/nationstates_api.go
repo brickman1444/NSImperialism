@@ -68,6 +68,10 @@ func ParseNation(xmlData []byte) (*Nation, error) {
 
 func GetNationData(nationName string) (*Nation, error) {
 
+	if nationName == "" {
+		return nil, nil
+	}
+
 	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?nation=%s;q=census+fullname+flag;scale=46;mode=prank", url.QueryEscape(nationName))
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

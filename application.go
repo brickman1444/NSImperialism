@@ -16,8 +16,11 @@ var globalGrid *grid.Grid = &grid.Grid{}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
-	var indexTemplate = template.Must(template.ParseFiles("index.html"))
-	indexTemplate.Execute(w, nil)
+	indexTemplate := template.Must(template.ParseFiles("index.html"))
+
+	page := &Page{"", nil, globalGrid.Render(), wars}
+
+	indexTemplate.Execute(w, page)
 }
 
 type Page struct {
@@ -59,19 +62,34 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	var indexTemplate = template.Must(template.ParseFiles("index.html"))
 
-	defender, err := nationstates_api.GetNationData("the_mechalus")
+	/*err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}*/
+
+	defender, err := nationstates_api.GetNationData(r.FormValue("defender"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	attacker, err := nationstates_api.GetNationData("testlandia")
+	attacker, err := nationstates_api.GetNationData(r.FormValue("attacker"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: "The Testlandian Conquest of A2"})
+	target := r.FormValue("target")
+	if len(target) > 2 {
+		target = target[0:2]
+	}
+
+	warName := fmt.Sprintf("The %s War for %s", attacker.Name, target)
+
+	if attacker != nil && defender != nil && len(warName) != 0 {
+		wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: warName})
+	}
 
 	page := &Page{"", nil, globalGrid.Render(), wars}
 
