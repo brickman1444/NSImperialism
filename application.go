@@ -66,7 +66,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	renderedGrid := grid.Render()
 
-	war := &war.War{Attacker: belligerent, Defender: nation, Score: 0, Name: "The Testlandian Conquest of A2"}
+	war := &war.War{Attacker: belligerent, Defender: nation, Score: -10, Name: "The Testlandian Conquest of A2"}
 
 	page := &Page{searchQuery, nation, belligerent, renderedGrid, war}
 
