@@ -43,17 +43,15 @@
           </tbody>
         </table>
           <h2>Wars</h2>
-          <h3>The Testlandian Conquest of A2</h3>
+          <h3>{{ .War.Name }}</h3>
           <dl>
-            <dt>Start Year</dt>
-            <dd>Year 0 (1 Year ago)</dd>
             <dt>Attacker</dt>
-            <dd>{{ .Belligerent.FlagAndName }}</dd>
+            <dd>{{ .War.Attacker.FlagAndName }}</dd> 
             <dt>Defender</dt>
-            <dd>{{.Nation.FlagAndName }}</dd>
+            <dd>{{.War.Defender.FlagAndName }}</dd>
             <dt>Warscore</dt>
-            <dd><span class="favorable">1%</span> in favor of {{.Nation.FlagAndName }}</dd>
-            <dd><span class="unfavorable">+21.25%</span> per year</dd>
+            <dd><span class="favorable">{{ .War.Score }}%</span> in favor of {{.War.Defender.FlagAndName }}</dd>
+            <dd><span class="unfavorable">{{ .War.ScoreChangePerYear }}%</span> per year</dd>
           </dl>
           {{ end }}
       </body>

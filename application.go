@@ -8,6 +8,7 @@ import (
 
 	"github.com/brickman1444/NSImperialism/grid"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
+	"github.com/brickman1444/NSImperialism/war"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +22,7 @@ type Page struct {
 	Nation      *nationstates_api.Nation
 	Belligerent *nationstates_api.Nation
 	Grid        *grid.RenderedGrid
+	War         *war.War
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +66,9 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	renderedGrid := grid.Render()
 
-	page := &Page{searchQuery, nation, belligerent, renderedGrid}
+	war := &war.War{Attacker: belligerent, Defender: nation, Score: 0, Name: "The Testlandian Conquest of A2"}
+
+	page := &Page{searchQuery, nation, belligerent, renderedGrid, war}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {

@@ -3,9 +3,10 @@ package war
 import "github.com/brickman1444/NSImperialism/nationstates_api"
 
 type War struct {
-	Defender *nationstates_api.Nation
 	Attacker *nationstates_api.Nation
+	Defender *nationstates_api.Nation
 	Score    int // 100 is attacker wins, -100 is defender wins
+	Name     string
 }
 
 func (war *War) ScoreChangePerYear() int {
