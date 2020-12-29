@@ -19,12 +19,16 @@ func (war *War) ScoreChangePerYear() int {
 }
 
 func (war *War) Advantage() *nationstates_api.Nation {
-	if war.Score > 0 {
-		return war.Attacker
+	return Advantage(war.Attacker, war.Defender, war.Score)
+}
+
+func Advantage(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, score int) *nationstates_api.Nation {
+	if score > 0 {
+		return attacker
 	}
 
-	if war.Score < 0 {
-		return war.Defender
+	if score < 0 {
+		return defender
 	}
 
 	return nil
@@ -46,5 +50,17 @@ func (war *War) ScoreDescription() template.HTML {
 	}
 
 	absoluteScore := Abs(war.Score)
-	return template.HTML(fmt.Sprintf("%d%%%s", absoluteScore, advantageDescription))
+	return template.HTML(fmt.Sprintf("Currently %d%%%s", absoluteScore, advantageDescription))
+}
+
+func (war *War) ScorePerYearDescription() template.HTML {
+
+	advantage := Advantage(war.Attacker, war.Defender, war.ScoreChangePerYear())
+	advantageDescription := ""
+	if advantage != nil {
+		advantageDescription = fmt.Sprintf(" in favor of %s", string(advantage.FlagAndName()))
+	}
+
+	absoluteScore := Abs(war.ScoreChangePerYear())
+	return template.HTML(fmt.Sprintf("+%d%%%s per year", absoluteScore, advantageDescription))
 }
