@@ -59,6 +59,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	grid.Rows[1].Cells[1].ResidentNation = nation
 	grid.Rows[2].Cells[1].ResidentNation = nation
+	grid.Rows[2].Cells[1].AttackerNation = belligerent
 	grid.Rows[3].Cells[2].ResidentNation = thirdParty
 	grid.Rows[3].Cells[3].ResidentNation = belligerent
 

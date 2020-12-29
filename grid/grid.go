@@ -7,11 +7,12 @@ import (
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
 
-const NUMROWS = 4
-const NUMCOLUMNS = 4
+const NUMROWS = 5
+const NUMCOLUMNS = 5
 
 type Cell struct {
 	ResidentNation *nationstates_api.Nation
+	AttackerNation *nationstates_api.Nation
 }
 
 type Row struct {
@@ -58,7 +59,14 @@ func (grid *Grid) Render() *RenderedGrid {
 			}
 
 			if grid.Rows[rowIndex].Cells[columnIndex].ResidentNation != nil {
-				renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = grid.Rows[rowIndex].Cells[columnIndex].ResidentNation.FlagThumbnail()
+
+				cellText := grid.Rows[rowIndex].Cells[columnIndex].ResidentNation.FlagThumbnail()
+				if grid.Rows[rowIndex].Cells[columnIndex].AttackerNation != nil {
+					cellText = cellText + "⚔️" + grid.Rows[rowIndex].Cells[columnIndex].AttackerNation.FlagThumbnail()
+				}
+
+				renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = template.HTML(cellText)
+
 				continue
 			}
 
