@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/brickman1444/NSImperialism/nationstates_api"
+	"github.com/brickman1444/NSImperialism/war"
 )
 
 const NUMROWS = 5
@@ -14,7 +15,6 @@ const NUMCOLUMNS = 5
 
 type Cell struct {
 	ResidentNation *nationstates_api.Nation
-	AttackerNation *nationstates_api.Nation
 }
 
 type Row struct {
@@ -51,7 +51,7 @@ func toIndex(r rune) (int, error) {
 	}
 }
 
-func (grid *Grid) Render() *RenderedGrid {
+func (grid *Grid) Render(wars []*war.War) *RenderedGrid {
 	renderedGrid := &RenderedGrid{}
 
 	for rowIndex, _ := range grid.Rows {
@@ -73,8 +73,11 @@ func (grid *Grid) Render() *RenderedGrid {
 			if grid.Rows[rowIndex].Cells[columnIndex].ResidentNation != nil {
 
 				cellText := grid.Rows[rowIndex].Cells[columnIndex].ResidentNation.FlagThumbnail()
-				if grid.Rows[rowIndex].Cells[columnIndex].AttackerNation != nil {
-					cellText = cellText + "⚔️" + grid.Rows[rowIndex].Cells[columnIndex].AttackerNation.FlagThumbnail()
+
+				war := war.FindWarAt(wars, rowIndex, columnIndex)
+
+				if war != nil {
+					cellText = cellText + "⚔️" + war.Attacker.FlagThumbnail()
 				}
 
 				renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = template.HTML(cellText)

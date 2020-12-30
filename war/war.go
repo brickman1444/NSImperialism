@@ -8,10 +8,12 @@ import (
 )
 
 type War struct {
-	Attacker *nationstates_api.Nation
-	Defender *nationstates_api.Nation
-	Score    int // 100 is attacker wins, -100 is defender wins
-	Name     string
+	Attacker          *nationstates_api.Nation
+	Defender          *nationstates_api.Nation
+	Score             int // 100 is attacker wins, -100 is defender wins
+	Name              string
+	TargetRowIndex    int
+	TargetColumnIndex int
 }
 
 func (war *War) ScoreChangePerYear() int {
@@ -63,4 +65,13 @@ func (war *War) ScorePerYearDescription() template.HTML {
 
 	absoluteScore := Abs(war.ScoreChangePerYear())
 	return template.HTML(fmt.Sprintf("+%d%%%s per year", absoluteScore, advantageDescription))
+}
+
+func FindWarAt(wars []*War, rowIndex int, columnIndex int) *War {
+	for warIndex, war := range wars {
+		if war.TargetRowIndex == rowIndex && war.TargetColumnIndex == columnIndex {
+			return wars[warIndex]
+		}
+	}
+	return nil
 }

@@ -18,7 +18,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalGrid.Render(), wars}
+	page := &Page{"", nil, globalGrid.Render(wars), wars}
 
 	indexTemplate.Execute(w, page)
 }
@@ -49,7 +49,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalGrid.Render(), wars}
+	page := &Page{searchQuery, nation, globalGrid.Render(wars), wars}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -91,7 +91,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
 
 	if attacker != nil && defender != nil && len(warName) != 0 {
-		wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: warName})
+		wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: warName, TargetRowIndex: targetRowIndex, TargetColumnIndex: targetColumnIndex})
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
