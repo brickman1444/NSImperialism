@@ -88,6 +88,12 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	currentWar := war.FindOngoingWarAt(globalWars, targetRowIndex, targetColumnIndex)
+	if currentWar != nil {
+		http.Error(w, fmt.Sprintf("There is already a war at %s", target), http.StatusBadRequest)
+		return
+	}
+
 	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
 
 	if attacker != nil && defender != nil && len(warName) != 0 {
