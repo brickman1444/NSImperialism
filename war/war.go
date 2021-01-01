@@ -14,6 +14,11 @@ type War struct {
 	Name              string
 	TargetRowIndex    int
 	TargetColumnIndex int
+	IsOngoing         bool
+}
+
+func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, targetRowIndex int, targetColumnIndex int) War {
+	return War{attacker, defender, 0, name, targetRowIndex, targetColumnIndex, true}
 }
 
 func (war *War) ScoreChangePerYear() int {
@@ -74,4 +79,10 @@ func FindWarAt(wars []*War, rowIndex int, columnIndex int) *War {
 		}
 	}
 	return nil
+}
+
+func (war *War) Tick() {
+	war.Score += war.ScoreChangePerYear()
+
+	war.IsOngoing = Abs(war.Score) < 100
 }

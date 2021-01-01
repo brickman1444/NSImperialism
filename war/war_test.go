@@ -15,7 +15,7 @@ func TestWarScoreChangePerYear(t *testing.T) {
 	attacker := &nationstates_api.Nation{}
 	attacker.SetDefenseForces(0)
 
-	war := &War{attacker, defender, 0, "", 0, 0}
+	war := NewWar(attacker, defender, "", 0, 0)
 
 	assert.Equal(t, 50, war.ScoreChangePerYear())
 }
@@ -24,7 +24,7 @@ func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
 	defender := &nationstates_api.Nation{}
 	attacker := &nationstates_api.Nation{}
 
-	war := &War{attacker, defender, 0, "", 0, 0}
+	war := NewWar(attacker, defender, "", 0, 0)
 
 	assert.Nil(t, war.Advantage())
 }
@@ -33,7 +33,8 @@ func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
 	defender := &nationstates_api.Nation{}
 	attacker := &nationstates_api.Nation{}
 
-	war := &War{attacker, defender, 1, "", 0, 0}
+	war := NewWar(attacker, defender, "", 0, 0)
+	war.Score = 1
 
 	assert.Same(t, attacker, war.Advantage())
 }
@@ -42,7 +43,8 @@ func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
 	defender := &nationstates_api.Nation{}
 	attacker := &nationstates_api.Nation{}
 
-	war := &War{attacker, defender, -1, "", 0, 0}
+	war := NewWar(attacker, defender, "", 0, 0)
+	war.Score = -1
 
 	assert.Same(t, defender, war.Advantage())
 }
@@ -66,4 +68,56 @@ func TestDefenderHasAdvantageWhenScoreIsNegative(t *testing.T) {
 	attacker := &nationstates_api.Nation{}
 
 	assert.Same(t, defender, Advantage(attacker, defender, -1))
+}
+
+func TestNewWarIsOngoing(t *testing.T) {
+
+	defender := &nationstates_api.Nation{}
+	attacker := &nationstates_api.Nation{}
+
+	war := NewWar(attacker, defender, "", 0, 0)
+
+	assert.True(t, war.IsOngoing)
+}
+
+func TestATickedWarChangesScore(t *testing.T) {
+
+	defender := &nationstates_api.Nation{}
+	defender.SetDefenseForces(50)
+
+	attacker := &nationstates_api.Nation{}
+	attacker.SetDefenseForces(0)
+
+	war := NewWar(attacker, defender, "", 0, 0)
+
+	assert.Equal(t, 0, war.Score)
+
+	war.Tick()
+
+	assert.Equal(t, 50, war.Score)
+
+	war.Tick()
+
+	assert.Equal(t, 100, war.Score)
+}
+
+func TestATickedWarCanEnd(t *testing.T) {
+
+	defender := &nationstates_api.Nation{}
+	defender.SetDefenseForces(50)
+
+	attacker := &nationstates_api.Nation{}
+	attacker.SetDefenseForces(0)
+
+	war := NewWar(attacker, defender, "", 0, 0)
+
+	assert.True(t, war.IsOngoing)
+
+	war.Tick()
+
+	assert.True(t, war.IsOngoing)
+
+	war.Tick()
+
+	assert.False(t, war.IsOngoing)
 }
