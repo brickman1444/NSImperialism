@@ -11,14 +11,14 @@ import (
 	"github.com/brickman1444/NSImperialism/war"
 )
 
-var wars []*war.War = []*war.War{}
+var globalWars []*war.War = []*war.War{}
 var globalGrid *grid.Grid = &grid.Grid{}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalGrid.Render(wars), wars}
+	page := &Page{"", nil, globalGrid.Render(globalWars), globalWars}
 
 	indexTemplate.Execute(w, page)
 }
@@ -49,7 +49,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalGrid.Render(wars), wars}
+	page := &Page{searchQuery, nation, globalGrid.Render(globalWars), globalWars}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -92,7 +92,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	if attacker != nil && defender != nil && len(warName) != 0 {
 		newWar := war.NewWar(attacker, defender, warName, targetRowIndex, targetColumnIndex)
-		wars = append(wars, &newWar)
+		globalWars = append(globalWars, &newWar)
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -122,7 +122,7 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
 
-	tick(globalGrid, wars)
+	tick(globalGrid, globalWars)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
