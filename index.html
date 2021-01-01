@@ -16,17 +16,6 @@
     </header>
 
     <body>
-      <div>
-        <form action="/search" method="GET">
-          <input autofocus class="usa-search" value="{{ .Query }}" placeholder="Enter a nation name" type="search"
-            name="q" required="required" />
-          <button type="submit" class="usa-button">Submit</button>
-        </form>
-      </div>
-      {{ if .Nation }}
-      <h2><img src="{{ .Nation.FlagURL }}" height="50" /><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
-      <div>Defense Forces: Top {{.Nation.GetDefenseForces }}% in the world</div>
-      {{ end }}
       {{ if .Grid }}
       <h2>Map</h2>
       <div>Year: {{ .Grid.Year }}</div>
@@ -82,6 +71,18 @@
         {{ end }}
       </dl>
       {{ end }}
+      {{ end }}
+      <h2>View a Nation's Statistics</h2>
+      <div>
+        <form action="/search" method="GET">
+          <input autofocus class="usa-search" value="{{ .Query }}" placeholder="Enter a nation name" type="search"
+            name="q" required="required" />
+          <button type="submit" class="usa-button">Submit</button>
+        </form>
+      </div>
+      {{ if .Nation }}
+      <h2><img src="{{ .Nation.FlagURL }}" height="50" /><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
+      <div>Defense Forces: Top {{.Nation.GetDefenseForces }}% in the world</div>
       {{ end }}
     </body>
     <footer class="usa-footer">
