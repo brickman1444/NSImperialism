@@ -72,9 +72,14 @@
         <dd>{{ .Attacker.FlagAndName }}</dd>
         <dt>Defender</dt>
         <dd>{{.Defender.FlagAndName }}</dd>
+        {{ if .IsOngoing }}
         <dt>Warscore</dt>
         <dd>{{ .ScoreDescription }}</dd>
         <dd>{{ .ScorePerYearDescription }}</dd>
+        {{ else }}
+        <dt>Winner</dt>
+        <dd>{{ .Advantage.FlagAndName }}</dd>
+        {{ end }}
       </dl>
       {{ end }}
       {{ end }}

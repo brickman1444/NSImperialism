@@ -82,11 +82,14 @@ func FindOngoingWarAt(wars []*War, rowIndex int, columnIndex int) *War {
 }
 
 func (war *War) Tick() bool {
-	war.Score += war.ScoreChangePerYear()
 
-	if war.IsOngoing && Abs(war.Score) >= 100 {
-		war.IsOngoing = false
-		return true
+	if war.IsOngoing {
+		war.Score += war.ScoreChangePerYear()
+
+		if Abs(war.Score) >= 100 {
+			war.IsOngoing = false
+			return true
+		}
 	}
 
 	return false
