@@ -51,11 +51,11 @@ func (nation *Nation) GetURL() string {
 }
 
 func (nation *Nation) FlagAndName() template.HTML {
-	return template.HTML(fmt.Sprintf("<img src=\"%s\" class=\"flag-thumb\"/>%s", nation.FlagURL, nation.Name))
+	return template.HTML(fmt.Sprintf("<a href=\"%s\" title=\"%s\"><img src=\"%s\" class=\"flag-thumb\"/>%s</a>", nation.GetURL(), nation.Name, nation.FlagURL, nation.Name))
 }
 
 func (nation *Nation) FlagThumbnail() template.HTML {
-	return template.HTML(fmt.Sprintf("<img src=\"%s\" class=\"flag-thumb\"/>", nation.FlagURL))
+	return template.HTML(fmt.Sprintf("<a href=\"%s\" title=\"%s\"><img src=\"%s\" class=\"flag-thumb\"/></a>", nation.GetURL(), nation.Name, nation.FlagURL))
 }
 
 func ParseNation(xmlData []byte) (*Nation, error) {
