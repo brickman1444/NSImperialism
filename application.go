@@ -91,7 +91,8 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
 
 	if attacker != nil && defender != nil && len(warName) != 0 {
-		wars = append(wars, &war.War{Attacker: attacker, Defender: defender, Score: 0, Name: warName, TargetRowIndex: targetRowIndex, TargetColumnIndex: targetColumnIndex})
+		newWar := war.NewWar(attacker, defender, warName, targetRowIndex, targetColumnIndex)
+		wars = append(wars, &newWar)
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -121,9 +122,20 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
 
-	globalGrid.Year++
+	tick(globalGrid, wars)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func tick(grid *grid.Grid, wars []*war.War) {
+	grid.Year++
+
+	for _, war := range wars {
+		didFinish := war.Tick()
+		if didFinish {
+			grid.Rows[war.TargetRowIndex].Cells[war.TargetColumnIndex].ResidentNation = war.Advantage()
+		}
+	}
 }
 
 func main() {

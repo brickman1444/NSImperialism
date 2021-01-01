@@ -6,6 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/brickman1444/NSImperialism/grid"
+	"github.com/brickman1444/NSImperialism/nationstates_api"
+	"github.com/brickman1444/NSImperialism/war"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,4 +31,27 @@ func TestParseHTMLTemplates(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	}
+}
+
+func TestACompletedWarChangesOwnershipOfTheGrid(t *testing.T) {
+	defender := &nationstates_api.Nation{}
+	defender.SetDefenseForces(100)
+
+	attacker := &nationstates_api.Nation{}
+	attacker.SetDefenseForces(0)
+
+	theWar := war.NewWar(attacker, defender, "", 1, 1)
+
+	grid := grid.Grid{}
+	grid.Rows[1].Cells[1].ResidentNation = defender
+
+	wars := []*war.War{&theWar}
+
+	tick(&grid, wars)
+
+	assert.False(t, theWar.IsOngoing)
+	assert.Equal(t, 100, theWar.Score)
+	assert.Same(t, attacker, theWar.Advantage())
+
+	assert.Same(t, attacker, grid.Rows[1].Cells[1].ResidentNation)
 }

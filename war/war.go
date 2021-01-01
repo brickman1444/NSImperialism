@@ -72,17 +72,22 @@ func (war *War) ScorePerYearDescription() template.HTML {
 	return template.HTML(fmt.Sprintf("+%d%%%s per year", absoluteScore, advantageDescription))
 }
 
-func FindWarAt(wars []*War, rowIndex int, columnIndex int) *War {
+func FindOngoingWarAt(wars []*War, rowIndex int, columnIndex int) *War {
 	for warIndex, war := range wars {
-		if war.TargetRowIndex == rowIndex && war.TargetColumnIndex == columnIndex {
+		if war.TargetRowIndex == rowIndex && war.TargetColumnIndex == columnIndex && war.IsOngoing {
 			return wars[warIndex]
 		}
 	}
 	return nil
 }
 
-func (war *War) Tick() {
+func (war *War) Tick() bool {
 	war.Score += war.ScoreChangePerYear()
 
-	war.IsOngoing = Abs(war.Score) < 100
+	if war.IsOngoing && Abs(war.Score) >= 100 {
+		war.IsOngoing = false
+		return true
+	}
+
+	return false
 }

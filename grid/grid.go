@@ -77,7 +77,7 @@ func (grid *Grid) Render(wars []*war.War) *RenderedGrid {
 
 				cellText := grid.Rows[rowIndex].Cells[columnIndex].ResidentNation.FlagThumbnail()
 
-				war := war.FindWarAt(wars, rowIndex, columnIndex)
+				war := war.FindOngoingWarAt(wars, rowIndex, columnIndex)
 
 				if war != nil {
 					cellText = cellText + "⚔️" + war.Attacker.FlagThumbnail()

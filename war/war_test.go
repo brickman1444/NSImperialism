@@ -113,11 +113,36 @@ func TestATickedWarCanEnd(t *testing.T) {
 
 	assert.True(t, war.IsOngoing)
 
-	war.Tick()
+	didFinish := war.Tick()
 
+	assert.False(t, didFinish)
 	assert.True(t, war.IsOngoing)
 
-	war.Tick()
+	didFinish = war.Tick()
 
+	assert.True(t, didFinish)
 	assert.False(t, war.IsOngoing)
+}
+
+func TestFindOngoingWarFindsAWar(t *testing.T) {
+	defender := &nationstates_api.Nation{}
+	attacker := &nationstates_api.Nation{}
+
+	war := NewWar(attacker, defender, "", 0, 0)
+
+	foundWar := FindOngoingWarAt([]*War{&war}, 0, 0)
+
+	assert.Same(t, &war, foundWar)
+}
+
+func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
+	defender := &nationstates_api.Nation{}
+	attacker := &nationstates_api.Nation{}
+
+	war := NewWar(attacker, defender, "", 0, 0)
+	war.IsOngoing = false
+
+	foundWar := FindOngoingWarAt([]*War{&war}, 0, 0)
+
+	assert.Nil(t, foundWar)
 }
