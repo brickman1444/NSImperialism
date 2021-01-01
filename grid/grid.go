@@ -23,6 +23,7 @@ type Row struct {
 
 type Grid struct {
 	Rows [NUMCOLUMNS]Row
+	Year int
 }
 
 type RenderedCell struct {
@@ -35,6 +36,7 @@ type RenderedRow struct {
 
 type RenderedGrid struct {
 	Rows [NUMCOLUMNS]RenderedRow
+	Year int
 }
 
 func toCharStr(i int) string {
@@ -53,6 +55,7 @@ func toIndex(r rune) (int, error) {
 
 func (grid *Grid) Render(wars []*war.War) *RenderedGrid {
 	renderedGrid := &RenderedGrid{}
+	renderedGrid.Year = grid.Year
 
 	for rowIndex, _ := range grid.Rows {
 		for columnIndex, _ := range grid.Rows[rowIndex].Cells {

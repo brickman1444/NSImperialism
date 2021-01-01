@@ -119,6 +119,13 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+func tickHandler(w http.ResponseWriter, r *http.Request) {
+
+	globalGrid.Year++
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func main() {
 
 	mux := http.NewServeMux()
@@ -126,6 +133,7 @@ func main() {
 	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/war", warHandler)
 	mux.HandleFunc("/colonize", colonizeHandler)
+	mux.HandleFunc("/tick", tickHandler)
 	mux.HandleFunc("/", indexHandler)
 
 	fileServer := http.FileServer(http.Dir("assets"))
