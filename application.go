@@ -10,12 +10,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/brickman1444/NSImperialism/grid"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/war"
 	"github.com/joho/godotenv"
 )
+
+const CELL_TABLE_NAME string = "nsimperialism-cell"
 
 var globalWars []*war.War = []*war.War{}
 var globalGrid *grid.Grid = &grid.Grid{}
@@ -150,6 +153,38 @@ func tick(grid *grid.Grid, wars []*war.War) {
 	}
 }
 
+type DatabaseCell struct {
+	ID string
+}
+
+func initializeDatabase() {
+	databaseContext := context.TODO()
+
+	awsConfig, err := config.LoadDefaultConfig(databaseContext)
+	if err != nil {
+		log.Fatalf("failed to load configuration, %v", err)
+	}
+
+	dynamodbClient := dynamodb.NewFromConfig(awsConfig)
+
+	getItemsResponse, err := dynamodbClient.Scan(databaseContext, &dynamodb.ScanInput{
+		TableName: aws.String(CELL_TABLE_NAME),
+	})
+
+	if err != nil {
+		log.Fatalf("failed to get items, %v", err)
+	}
+
+	records := []DatabaseCell{}
+	err = attributevalue.UnmarshalListOfMaps(getItemsResponse.Items, &records)
+	if err != nil {
+		log.Println("failed to unmarshal Items, %w", err)
+	}
+	for _, record := range records {
+		log.Println("Record: ID:", record.ID)
+	}
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -157,26 +192,7 @@ func main() {
 		log.Println("Failed to load .env file:", err.Error())
 	}
 
-	awsConfig, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatalf("failed to load configuration, %v", err)
-	}
-
-	// Using the Config value, create the DynamoDB client
-	dynamodbClient := dynamodb.NewFromConfig(awsConfig)
-
-	// Build the request with its input parameters
-	resp, err := dynamodbClient.ListTables(context.TODO(), &dynamodb.ListTablesInput{
-		Limit: aws.Int32(5),
-	})
-	if err != nil {
-		log.Fatalf("failed to list tables, %v", err)
-	}
-
-	fmt.Println("Tables:")
-	for _, tableName := range resp.TableNames {
-		fmt.Println(tableName)
-	}
+	initializeDatabase()
 
 	mux := http.NewServeMux()
 
