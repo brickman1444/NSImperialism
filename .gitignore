@@ -16,3 +16,4 @@
 __debug_bin
 source_bundle.zip
 bin/
+.env

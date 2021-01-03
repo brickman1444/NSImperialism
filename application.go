@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/brickman1444/NSImperialism/grid"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/war"
+	"github.com/joho/godotenv"
 )
 
 var globalWars []*war.War = []*war.War{}
@@ -145,6 +151,32 @@ func tick(grid *grid.Grid, wars []*war.War) {
 }
 
 func main() {
+
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Println("Failed to load .env file:", err.Error())
+	}
+
+	awsConfig, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatalf("failed to load configuration, %v", err)
+	}
+
+	// Using the Config value, create the DynamoDB client
+	dynamodbClient := dynamodb.NewFromConfig(awsConfig)
+
+	// Build the request with its input parameters
+	resp, err := dynamodbClient.ListTables(context.TODO(), &dynamodb.ListTablesInput{
+		Limit: aws.Int32(5),
+	})
+	if err != nil {
+		log.Fatalf("failed to list tables, %v", err)
+	}
+
+	fmt.Println("Tables:")
+	for _, tableName := range resp.TableNames {
+		fmt.Println(tableName)
+	}
 
 	mux := http.NewServeMux()
 
