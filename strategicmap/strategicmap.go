@@ -40,10 +40,10 @@ func divideAndRoundToNearestInteger(numerator int, denominator int) int {
 	return int(math.Round(float64(numerator) / float64(denominator) * 100))
 }
 
-func (territory Territory) LeftAsPercent() int {
+func (territory Territory) LeftPercent() int {
 	return divideAndRoundToNearestInteger(territory.LeftPX, MAPWIDTHPX)
 }
 
-func (territory Territory) TopAsPercent() int {
+func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
