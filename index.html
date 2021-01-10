@@ -22,7 +22,8 @@
       <div>Year: {{ .Grid.Year }}</div>
 
       <div class="map-container">
-        <img class="map-image" src="/assets/images/map.png">
+        <img class="map-political" src="/assets/images/map_political.png">
+        <img class="map-geographic" src="/assets/images/map.png">
 
         {{ range .Map.Territories }}
         <div class="floating-text" style="top: {{ .TopAsPercent }}%; left: {{ .LeftAsPercent }}%;"><a

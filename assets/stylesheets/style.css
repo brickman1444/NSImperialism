@@ -33,6 +33,15 @@
     transform: translate( -50%, -50% ); /* this part centers the text on the point */
 }
 
-.map-image {
+.map-geographic {
     display: block;
+}
+
+.map-political {
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    top:0;
+    opacity:0.2;
 }
