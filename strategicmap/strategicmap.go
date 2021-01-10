@@ -1,6 +1,7 @@
 package strategicmap
 
 import (
+	"html/template"
 	"math"
 
 	"github.com/brickman1444/NSImperialism/nationstates_api"
@@ -17,7 +18,7 @@ type Map struct {
 }
 
 type RenderedTerritory struct {
-	Text        string
+	Text        template.HTML
 	LeftPercent int
 	TopPercent  int
 }
@@ -67,13 +68,21 @@ func (territory Territory) TopPercent() int {
 func Render(strategicMap Map, ownerships Ownerships) RenderedMap {
 	renderedMap := RenderedMap{}
 
+	testlandia, _ := nationstates_api.GetNationData("testlandia")
+	ownerships["A"] = *testlandia
+
 	for _, territory := range strategicMap.Territories {
 
 		renderedTerritory := RenderedTerritory{}
 		renderedTerritory.LeftPercent = territory.LeftPercent()
 		renderedTerritory.TopPercent = territory.TopPercent()
 
-		renderedTerritory.Text = territory.Name + " ❓"
+		residentNation, residentNationExists := ownerships[territory.Name]
+		if residentNationExists {
+			renderedTerritory.Text = template.HTML(territory.Name + " " + string(residentNation.FlagThumbnail()))
+		} else {
+			renderedTerritory.Text = template.HTML(territory.Name + " ❓")
+		}
 
 		renderedMap.Territories = append(renderedMap.Territories, renderedTerritory)
 	}
