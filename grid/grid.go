@@ -22,7 +22,7 @@ type Row struct {
 }
 
 type Grid struct {
-	Rows [NUMCOLUMNS]Row
+	Rows [NUMROWS]Row
 	Year int
 }
 
