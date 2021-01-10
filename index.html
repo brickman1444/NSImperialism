@@ -13,12 +13,22 @@
   <main>
     <header class="usa-header">
       <h1><a href="/">NSImperialism (Alpha)</a></h1>
+      <p>The server may reset the state of the game at any time.</p>
     </header>
 
     <body>
       {{ if .Grid }}
       <h2>Map</h2>
       <div>Year: {{ .Grid.Year }}</div>
+
+      <div class="map-container">
+        <img class="map-image" src="/assets/images/map.png">
+        <div class="floating-text"><a href="https://www.nationstates.net/nation=the_mechalus"
+            title="The Empire of the Mechalus"><img
+              src="https://www.nationstates.net/images/flags/uploads/the_mechalus__47928.png" class="flag-thumb" /></a>
+        </div>
+      </div>
+
       <table class="usa-table">
         <tbody>
           {{ range .Grid.Rows }}
@@ -37,7 +47,8 @@
       <h2>Colonize</h2>
       <form action="/colonize" method="POST">
         <label for="colonizer">Colonizer:</label>
-        <input type="text" id="colonizer" name="colonizer" placeholder="Enter a nation name" required="required"><br><br>
+        <input type="text" id="colonizer" name="colonizer" placeholder="Enter a nation name"
+          required="required"><br><br>
         <label for="target">Target:</label>
         <input type="text" id="target" name="target" placeholder="e.g. A1" required="required" maxlength="2"
           pattern="[A-Z][1-4]"><br><br>
