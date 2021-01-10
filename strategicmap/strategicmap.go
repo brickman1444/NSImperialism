@@ -1,6 +1,10 @@
 package strategicmap
 
-import "math"
+import (
+	"math"
+
+	"github.com/brickman1444/NSImperialism/nationstates_api"
+)
 
 type Territory struct {
 	Name   string
@@ -11,6 +15,18 @@ type Territory struct {
 type Map struct {
 	Territories []Territory
 }
+
+type RenderedTerritory struct {
+	Text        string
+	LeftPercent int
+	TopPercent  int
+}
+
+type RenderedMap struct {
+	Territories []RenderedTerritory
+}
+
+type Ownerships map[string]nationstates_api.Nation
 
 const MAPWIDTHPX = 1536
 const MAPHEIGHTPX = 723
@@ -46,4 +62,21 @@ func (territory Territory) LeftPercent() int {
 
 func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
+}
+
+func Render(strategicMap Map, ownerships Ownerships) RenderedMap {
+	renderedMap := RenderedMap{}
+
+	for _, territory := range strategicMap.Territories {
+
+		renderedTerritory := RenderedTerritory{}
+		renderedTerritory.LeftPercent = territory.LeftPercent()
+		renderedTerritory.TopPercent = territory.TopPercent()
+
+		renderedTerritory.Text = territory.Name + " ❓"
+
+		renderedMap.Territories = append(renderedMap.Territories, renderedTerritory)
+	}
+
+	return renderedMap
 }
