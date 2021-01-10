@@ -25,12 +25,13 @@ var globalWars []*war.War = []*war.War{}
 var globalGrid *grid.Grid = &grid.Grid{}
 var residentNations = strategicmap.Ownerships{}
 var strategicMap = strategicmap.StaticMap
+var year = 0
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalGrid.Render(globalWars), globalWars, strategicmap.Render(strategicMap, residentNations)}
+	page := &Page{"", nil, globalWars, strategicmap.Render(strategicMap, residentNations), year}
 
 	indexTemplate.Execute(w, page)
 }
@@ -38,9 +39,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 type Page struct {
 	Query  string
 	Nation *nationstates_api.Nation
-	Grid   *grid.RenderedGrid
 	Wars   []*war.War
 	Map    strategicmap.RenderedMap
+	Year   int
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +63,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalGrid.Render(globalWars), globalWars, strategicmap.Render(strategicMap, residentNations)}
+	page := &Page{searchQuery, nation, globalWars, strategicmap.Render(strategicMap, residentNations), year}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
