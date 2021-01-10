@@ -8,9 +8,9 @@ import (
 
 func TestTerritoryLeftAsPercentDividesAndRoundsToInteger(t *testing.T) {
 
-	territoryA := Territory{415, 0}
-	territoryB := Territory{1020, 0}
-	territoryC := Territory{840, 0}
+	territoryA := Territory{LeftPX: 415}
+	territoryB := Territory{LeftPX: 1020}
+	territoryC := Territory{LeftPX: 840}
 
 	assert.Equal(t, 27, territoryA.LeftAsPercent())
 	assert.Equal(t, 66, territoryB.LeftAsPercent())
@@ -19,9 +19,9 @@ func TestTerritoryLeftAsPercentDividesAndRoundsToInteger(t *testing.T) {
 
 func TestTerritoryTopAsPercentDividesAndRoundsToInteger(t *testing.T) {
 
-	territoryA := Territory{0, 95}
-	territoryB := Territory{0, 270}
-	territoryC := Territory{0, 645}
+	territoryA := Territory{TopPX: 95}
+	territoryB := Territory{TopPX: 270}
+	territoryC := Territory{TopPX: 645}
 
 	assert.Equal(t, 13, territoryA.TopAsPercent())
 	assert.Equal(t, 37, territoryB.TopAsPercent())
