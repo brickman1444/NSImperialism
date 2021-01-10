@@ -23,12 +23,14 @@ const CELL_TABLE_NAME string = "nsimperialism-cell"
 
 var globalWars []*war.War = []*war.War{}
 var globalGrid *grid.Grid = &grid.Grid{}
+var residentNations = strategicmap.Ownerships{}
+var strategicMap = strategicmap.StaticMap
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalGrid.Render(globalWars), globalWars, strategicmap.Render(strategicmap.StaticMap, map[string]nationstates_api.Nation{})}
+	page := &Page{"", nil, globalGrid.Render(globalWars), globalWars, strategicmap.Render(strategicMap, residentNations)}
 
 	indexTemplate.Execute(w, page)
 }
@@ -60,7 +62,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalGrid.Render(globalWars), globalWars, strategicmap.Render(strategicmap.StaticMap, map[string]nationstates_api.Nation{})}
+	page := &Page{searchQuery, nation, globalGrid.Render(globalWars), globalWars, strategicmap.Render(strategicMap, residentNations)}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -124,11 +126,11 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	target := r.FormValue("target")
-	if len(target) > 2 {
-		target = target[0:2]
+	if len(target) > 1 {
+		target = target[0:1]
 	}
 
-	err = globalGrid.Colonize(*colonizer, target)
+	err = strategicmap.Colonize(&residentNations, strategicMap, *colonizer, target)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

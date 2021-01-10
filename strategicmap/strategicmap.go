@@ -1,6 +1,7 @@
 package strategicmap
 
 import (
+	"fmt"
 	"html/template"
 	"math"
 
@@ -88,4 +89,29 @@ func Render(strategicMap Map, ownerships Ownerships) RenderedMap {
 	}
 
 	return renderedMap
+}
+
+func DoesTerritoryExist(strategicMap Map, name string) bool {
+	for _, territory := range strategicMap.Territories {
+		if territory.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func Colonize(residentNations *Ownerships, strategicMap Map, colonizer nationstates_api.Nation, target string) error {
+
+	if !DoesTerritoryExist(strategicMap, target) {
+		return fmt.Errorf("No territory exists at %s", target)
+	}
+
+	_, exists := (*residentNations)[target]
+	if exists {
+		return fmt.Errorf("A nation is already resident at %s", target)
+	}
+
+	(*residentNations)[target] = colonizer
+
+	return nil
 }
