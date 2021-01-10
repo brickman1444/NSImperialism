@@ -17,7 +17,6 @@
     </header>
 
     <body>
-      {{ if .Grid }}
       <h2>Map</h2>
       <div>Year: {{ .Grid.Year }}</div>
 
@@ -30,18 +29,6 @@
         {{ end }}
       </div>
 
-      <table class="usa-table">
-        <tbody>
-          {{ range .Grid.Rows }}
-          <tr>
-            {{ range .Cells }}
-            <td>{{ .Text }}</td>
-            {{ end }}
-          </tr>
-          {{ end }}
-        </tbody>
-      </table>
-      {{ end }}
       <form action="/tick" method="POST">
         <button type="submit" class="usa-button">Proceed To Next Year</button>
       </form>
