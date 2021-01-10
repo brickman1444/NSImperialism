@@ -23,10 +23,13 @@
 
       <div class="map-container">
         <img class="map-image" src="/assets/images/map.png">
-        <div class="floating-text"><a href="https://www.nationstates.net/nation=the_mechalus"
-            title="The Empire of the Mechalus"><img
+
+        {{ range .Map.Territories }}
+        <div class="floating-text" style="top: {{ .TopAsPercent }}%; left: {{ .LeftAsPercent }}%;"><a
+            href="https://www.nationstates.net/nation=the_mechalus" title="The Empire of the Mechalus"><img
               src="https://www.nationstates.net/images/flags/uploads/the_mechalus__47928.png" class="flag-thumb" /></a>
         </div>
+        {{ end }}
       </div>
 
       <table class="usa-table">

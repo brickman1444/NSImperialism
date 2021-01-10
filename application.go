@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/brickman1444/NSImperialism/grid"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
+	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
 	"github.com/joho/godotenv"
 )
@@ -27,7 +28,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalGrid.Render(globalWars), globalWars}
+	page := &Page{"", nil, globalGrid.Render(globalWars), globalWars, strategicmap.StaticMap}
 
 	indexTemplate.Execute(w, page)
 }
@@ -37,6 +38,7 @@ type Page struct {
 	Nation *nationstates_api.Nation
 	Grid   *grid.RenderedGrid
 	Wars   []*war.War
+	Map    strategicmap.Map
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +60,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalGrid.Render(globalWars), globalWars}
+	page := &Page{searchQuery, nation, globalGrid.Render(globalWars), globalWars, strategicmap.StaticMap}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
