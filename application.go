@@ -29,7 +29,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations), globalYear}
+	page := &Page{"", nil, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars), globalYear}
 
 	indexTemplate.Execute(w, page)
 }
@@ -61,7 +61,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations), globalYear}
+	page := &Page{searchQuery, nation, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars), globalYear}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {

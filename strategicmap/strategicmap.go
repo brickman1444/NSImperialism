@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/brickman1444/NSImperialism/nationstates_api"
+	"github.com/brickman1444/NSImperialism/war"
 )
 
 type Territory struct {
@@ -66,7 +67,7 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
-func Render(strategicMap Map, ownerships Ownerships) RenderedMap {
+func Render(strategicMap Map, ownerships Ownerships, wars []*war.War) RenderedMap {
 	renderedMap := RenderedMap{}
 
 	testlandia, _ := nationstates_api.GetNationData("testlandia")
@@ -80,7 +81,13 @@ func Render(strategicMap Map, ownerships Ownerships) RenderedMap {
 
 		residentNation, residentNationExists := ownerships[territory.Name]
 		if residentNationExists {
-			renderedTerritory.Text = template.HTML(territory.Name + " " + string(residentNation.FlagThumbnail()))
+
+			war := war.FindOngoingWarAt(wars, territory.Name)
+			if war != nil {
+				renderedTerritory.Text = template.HTML(fmt.Sprint(territory.Name, " ", residentNation.FlagThumbnail(), "⚔️", war.Attacker.FlagThumbnail()))
+			} else {
+				renderedTerritory.Text = template.HTML(territory.Name + " " + string(residentNation.FlagThumbnail()))
+			}
 		} else {
 			renderedTerritory.Text = template.HTML(territory.Name + " ❓")
 		}
