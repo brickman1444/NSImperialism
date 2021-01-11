@@ -8,17 +8,16 @@ import (
 )
 
 type War struct {
-	Attacker          *nationstates_api.Nation
-	Defender          *nationstates_api.Nation
-	Score             int // 100 is attacker wins, -100 is defender wins
-	Name              string
-	TargetRowIndex    int
-	TargetColumnIndex int
-	IsOngoing         bool
+	Attacker      *nationstates_api.Nation
+	Defender      *nationstates_api.Nation
+	Score         int // 100 is attacker wins, -100 is defender wins
+	Name          string
+	TerritoryName string
+	IsOngoing     bool
 }
 
-func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, targetRowIndex int, targetColumnIndex int) War {
-	return War{attacker, defender, 0, name, targetRowIndex, targetColumnIndex, true}
+func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, territoryName string) War {
+	return War{attacker, defender, 0, name, territoryName, true}
 }
 
 func (war *War) ScoreChangePerYear() int {
@@ -72,9 +71,9 @@ func (war *War) ScorePerYearDescription() template.HTML {
 	return template.HTML(fmt.Sprintf("+%d%%%s per year", absoluteScore, advantageDescription))
 }
 
-func FindOngoingWarAt(wars []*War, rowIndex int, columnIndex int) *War {
+func FindOngoingWarAt(wars []*War, territoryName string) *War {
 	for warIndex, war := range wars {
-		if war.TargetRowIndex == rowIndex && war.TargetColumnIndex == columnIndex && war.IsOngoing {
+		if war.TerritoryName == territoryName && war.IsOngoing {
 			return wars[warIndex]
 		}
 	}

@@ -54,44 +54,7 @@ func toIndex(r rune) (int, error) {
 }
 
 func (grid *Grid) Render(wars []*war.War) *RenderedGrid {
-	renderedGrid := &RenderedGrid{}
-	renderedGrid.Year = grid.Year
-
-	for rowIndex, _ := range grid.Rows {
-		for columnIndex, _ := range grid.Rows[rowIndex].Cells {
-			if rowIndex == 0 && columnIndex == 0 {
-				continue
-			}
-
-			if rowIndex == 0 {
-				renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = template.HTML(toCharStr(columnIndex))
-				continue
-			}
-
-			if columnIndex == 0 {
-				renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = template.HTML(fmt.Sprintf("%d", rowIndex))
-				continue
-			}
-
-			if grid.Rows[rowIndex].Cells[columnIndex].ResidentNation != nil {
-
-				cellText := grid.Rows[rowIndex].Cells[columnIndex].ResidentNation.FlagThumbnail()
-
-				war := war.FindOngoingWarAt(wars, rowIndex, columnIndex)
-
-				if war != nil {
-					cellText = cellText + "⚔️" + war.Attacker.FlagThumbnail()
-				}
-
-				renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = template.HTML(cellText)
-
-				continue
-			}
-
-			renderedGrid.Rows[rowIndex].Cells[columnIndex].Text = template.HTML("❓")
-		}
-	}
-	return renderedGrid
+	return &RenderedGrid{}
 }
 
 func (grid *Grid) GetCoordinates(coordinatesString string) (int, int, error) {

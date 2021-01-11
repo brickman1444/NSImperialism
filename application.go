@@ -23,15 +23,15 @@ const CELL_TABLE_NAME string = "nsimperialism-cell"
 
 var globalWars []*war.War = []*war.War{}
 var globalGrid *grid.Grid = &grid.Grid{}
-var residentNations = strategicmap.Ownerships{}
-var strategicMap = strategicmap.StaticMap
-var year = 0
+var globalResidentNations = strategicmap.Ownerships{}
+var globalStrategicMap = strategicmap.StaticMap
+var globalYear = 0
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalWars, strategicmap.Render(strategicMap, residentNations), year}
+	page := &Page{"", nil, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations), globalYear}
 
 	indexTemplate.Execute(w, page)
 }
@@ -63,7 +63,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalWars, strategicmap.Render(strategicMap, residentNations), year}
+	page := &Page{searchQuery, nation, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations), globalYear}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -85,14 +85,9 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	target := r.FormValue("target")
-	targetRowIndex, targetColumnIndex, err := globalGrid.GetCoordinates(target)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 
-	defender := globalGrid.Rows[targetRowIndex].Cells[targetColumnIndex].ResidentNation
-	if defender == nil {
+	defender, defenderExists := globalResidentNations[target]
+	if !defenderExists {
 		http.Error(w, fmt.Sprintf("No nation resides in %s", target), http.StatusBadRequest)
 		return
 	}
@@ -102,7 +97,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentWar := war.FindOngoingWarAt(globalWars, targetRowIndex, targetColumnIndex)
+	currentWar := war.FindOngoingWarAt(globalWars, target)
 	if currentWar != nil {
 		http.Error(w, fmt.Sprintf("There is already a war at %s", target), http.StatusBadRequest)
 		return
@@ -110,8 +105,8 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
 
-	if attacker != nil && defender != nil && len(warName) != 0 {
-		newWar := war.NewWar(attacker, defender, warName, targetRowIndex, targetColumnIndex)
+	if attacker != nil && len(warName) != 0 {
+		newWar := war.NewWar(attacker, &defender, warName, target)
 		globalWars = append(globalWars, &newWar)
 	}
 
@@ -127,11 +122,8 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	target := r.FormValue("target")
-	if len(target) > 1 {
-		target = target[0:1]
-	}
 
-	err = strategicmap.Colonize(&residentNations, strategicMap, *colonizer, target)
+	err = strategicmap.Colonize(&globalResidentNations, globalStrategicMap, *colonizer, target)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -142,18 +134,18 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
 
-	tick(globalGrid, globalWars)
+	tick(globalResidentNations, globalWars, &globalYear)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func tick(grid *grid.Grid, wars []*war.War) {
-	grid.Year++
+func tick(residentNations strategicmap.Ownerships, wars []*war.War, year *int) {
+	(*year)++
 
 	for _, war := range wars {
 		didFinish := war.Tick()
 		if didFinish {
-			grid.Rows[war.TargetRowIndex].Cells[war.TargetColumnIndex].ResidentNation = war.Advantage()
+			residentNations[war.TerritoryName] = *war.Advantage()
 		}
 	}
 }
