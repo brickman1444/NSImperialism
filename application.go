@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
@@ -149,7 +150,12 @@ func tick(residentNations strategicmap.Ownerships, wars []*war.War, year *int) {
 }
 
 type DatabaseCell struct {
-	ID string
+	ID       string
+	Resident string
+}
+
+func (cell DatabaseCell) ToString() string {
+	return fmt.Sprintf("ID: %v Resident: %v", cell.ID, cell.Resident)
 }
 
 func initializeDatabase() {
@@ -176,8 +182,42 @@ func initializeDatabase() {
 		log.Println("failed to unmarshal Items, %w", err)
 	}
 	for _, record := range records {
-		log.Println("Record: ID:", record.ID)
+		log.Println(record.ToString())
 	}
+
+	itemToPut := DatabaseCell{
+		ID:       "A",
+		Resident: "testlandia",
+	}
+	itemToPutMap, err := attributevalue.MarshalMap(itemToPut)
+	if err != nil {
+		log.Fatalf("failed to marshal item, %v", err)
+	}
+
+	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
+		TableName: aws.String(CELL_TABLE_NAME),
+		Item:      itemToPutMap,
+	})
+	if err != nil {
+		log.Fatalf("failed to put item, %v", err)
+	}
+
+	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
+		TableName: aws.String(CELL_TABLE_NAME),
+		Key: map[string]types.AttributeValue{
+			"ID": &types.AttributeValueMemberS{
+				Value: itemToPut.ID,
+			},
+		},
+	})
+
+	updatedItem := DatabaseCell{}
+	err = attributevalue.UnmarshalMap(getItemOutput.Item, &updatedItem)
+	if err != nil {
+		log.Fatalf("failed to unmarshal item, %v", err)
+	}
+
+	log.Println(updatedItem.ToString())
 }
 
 func main() {
