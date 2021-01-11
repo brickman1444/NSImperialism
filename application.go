@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/brickman1444/NSImperialism/grid"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
@@ -22,7 +21,6 @@ import (
 const CELL_TABLE_NAME string = "nsimperialism-cell"
 
 var globalWars []*war.War = []*war.War{}
-var globalGrid *grid.Grid = &grid.Grid{}
 var globalResidentNations = strategicmap.Ownerships{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = 0

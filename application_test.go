@@ -33,7 +33,7 @@ func TestParseHTMLTemplates(t *testing.T) {
 	}
 }
 
-func TestACompletedWarChangesOwnershipOfTheGrid(t *testing.T) {
+func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 	defender := &nationstates_api.Nation{Id: "Defender"}
 	defender.SetDefenseForces(100)
 
