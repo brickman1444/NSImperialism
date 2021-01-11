@@ -42,8 +42,8 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 
 	theWar := war.NewWar(attacker, defender, "", "A")
 
-	residentNations := strategicmap.Ownerships{}
-	residentNations["A"] = *defender
+	residentNations := strategicmap.NewResidentsSimpleMap()
+	residentNations.SetResident("A", defender.Id)
 
 	wars := []*war.War{&theWar}
 	year := 0
@@ -54,5 +54,5 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 	assert.Equal(t, 100, theWar.Score)
 	assert.Equal(t, attacker.Id, theWar.Advantage().Id)
 
-	assert.Equal(t, attacker.Id, residentNations["A"].Id)
+	assert.Equal(t, attacker.Id, residentNations.GetResident("A"))
 }

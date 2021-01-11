@@ -22,7 +22,7 @@ import (
 const CELL_TABLE_NAME string = "nsimperialism-cell"
 
 var globalWars []*war.War = []*war.War{}
-var globalResidentNations = strategicmap.Ownerships{}
+var globalResidentNations = strategicmap.NewResidentsSimpleMap()
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = 0
 
@@ -85,13 +85,13 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	target := r.FormValue("target")
 
-	defender, defenderExists := globalResidentNations[target]
-	if !defenderExists {
+	defenderID := globalResidentNations.GetResident(target)
+	if defenderID == "" {
 		http.Error(w, fmt.Sprintf("No nation resides in %s", target), http.StatusBadRequest)
 		return
 	}
 
-	if attacker.Id == defender.Id {
+	if attacker.Id == defenderID {
 		http.Error(w, fmt.Sprintf("You can't attack yourself"), http.StatusBadRequest)
 		return
 	}
@@ -104,8 +104,14 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
 
+	defender, err := nationstates_api.GetNationData(defenderID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get defender data for %s", defenderID), http.StatusInternalServerError)
+		return
+	}
+
 	if attacker != nil && len(warName) != 0 {
-		newWar := war.NewWar(attacker, &defender, warName, target)
+		newWar := war.NewWar(attacker, defender, warName, target)
 		globalWars = append(globalWars, &newWar)
 	}
 
@@ -138,13 +144,13 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func tick(residentNations strategicmap.Ownerships, wars []*war.War, year *int) {
+func tick(residentNations strategicmap.ResidentsInterface, wars []*war.War, year *int) {
 	(*year)++
 
 	for _, war := range wars {
 		didFinish := war.Tick()
 		if didFinish {
-			residentNations[war.TerritoryName] = *war.Advantage()
+			residentNations.SetResident(war.TerritoryName, war.Advantage().Id)
 		}
 	}
 }
