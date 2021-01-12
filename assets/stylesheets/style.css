@@ -16,7 +16,8 @@
 }
 
 .flag-thumb {
-    height: 12
+    max-height:13px;
+    max-width:20px;
 }
 
 .map-container {

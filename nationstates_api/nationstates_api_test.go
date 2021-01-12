@@ -38,3 +38,17 @@ func TestDefenseCanBeSetAndGet(t *testing.T) {
 	nation.SetDefenseForces(2)
 	assert.Equal(t, 2, nation.GetDefenseForces())
 }
+
+func TestFlagThumbnailURLsAreGeneratedToMatchTheHostedImageURLs(t *testing.T) {
+	mechalus := Nation{
+		FlagURL: "https://www.nationstates.net/images/flags/uploads/the_mechalus__47928.png",
+	}
+
+	assert.Equal(t, "https://www.nationstates.net/images/flags/uploads/the_mechalus__47928t2.png", mechalus.FlagThumbnailURL())
+
+	eritrea := Nation{
+		FlagURL: "https://www.nationstates.net/images/flags/Eritrea.png",
+	}
+
+	assert.Equal(t, "https://www.nationstates.net/images/flags/Eritreat2.png", eritrea.FlagThumbnailURL())
+}

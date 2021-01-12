@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -50,12 +51,16 @@ func (nation *Nation) GetURL() string {
 	return fmt.Sprintf("https://www.nationstates.net/nation=%s", nation.Id)
 }
 
+func (nation Nation) FlagThumbnailURL() string {
+	return strings.ReplaceAll(nation.FlagURL, ".png", "t2.png")
+}
+
 func (nation *Nation) FlagAndName() template.HTML {
-	return template.HTML(fmt.Sprintf("<a href=\"%s\" title=\"%s\"><img src=\"%s\" class=\"flag-thumb\"/>%s</a>", nation.GetURL(), nation.Name, nation.FlagURL, nation.Name))
+	return template.HTML(fmt.Sprintf("<a href=\"%s\" title=\"%s\"><img src=\"%s\" class=\"flag-thumb\"/>%s</a>", nation.GetURL(), nation.Name, nation.FlagThumbnailURL(), nation.Name))
 }
 
 func (nation *Nation) FlagThumbnail() template.HTML {
-	return template.HTML(fmt.Sprintf("<a href=\"%s\" title=\"%s\"><img src=\"%s\" class=\"flag-thumb\"/></a>", nation.GetURL(), nation.Name, nation.FlagURL))
+	return template.HTML(fmt.Sprintf("<a href=\"%s\" title=\"%s\"><img src=\"%s\" class=\"flag-thumb\"/></a>", nation.GetURL(), nation.Name, nation.FlagThumbnailURL()))
 }
 
 func ParseNation(xmlData []byte) (*Nation, error) {
