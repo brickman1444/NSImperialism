@@ -22,7 +22,7 @@
 
       <div class="map-container">
         <img class="map-political" src="/assets/images/map_political.png">
-        <img class="map-geographic" src="/assets/images/map.png">
+        <img class="map-geographic" src="/assets/images/map.jpg">
 
         {{ range .Map.Territories }}
         <div class="floating-text" style="top: {{ .TopPercent }}%; left: {{ .LeftPercent }}%;">{{ .Text }}</div>
@@ -74,7 +74,7 @@
       <h2>View a Nation's Statistics</h2>
       <div>
         <form action="/search" method="GET">
-          <input autofocus class="usa-search" value="{{ .Query }}" placeholder="Enter a nation name" type="search"
+          <input class="usa-search" value="{{ .Query }}" placeholder="Enter a nation name" type="search"
             name="q" required="required" />
           <button type="submit" class="usa-button">Submit</button>
         </form>
