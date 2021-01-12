@@ -1,25 +1,18 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/brickman1444/NSImperialism/dynamodbwrapper"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
 	"github.com/joho/godotenv"
 )
-
-const CELL_TABLE_NAME string = "nsimperialism-cell"
 
 var globalWars []*war.War = []*war.War{}
 var globalResidentNations = strategicmap.NewResidentsSimpleMap()
@@ -85,7 +78,12 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	target := r.FormValue("target")
 
-	defenderID := globalResidentNations.GetResident(target)
+	defenderID, err := globalResidentNations.GetResident(target)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get defender for %s", target), http.StatusInternalServerError)
+		return
+	}
+
 	if defenderID == "" {
 		http.Error(w, fmt.Sprintf("No nation resides in %s", target), http.StatusBadRequest)
 		return
@@ -155,77 +153,6 @@ func tick(residentNations strategicmap.ResidentsInterface, wars []*war.War, year
 	}
 }
 
-type DatabaseCell struct {
-	ID       string
-	Resident string
-}
-
-func (cell DatabaseCell) ToString() string {
-	return fmt.Sprintf("ID: %v Resident: %v", cell.ID, cell.Resident)
-}
-
-func initializeDatabase() {
-	databaseContext := context.TODO()
-
-	awsConfig, err := config.LoadDefaultConfig(databaseContext)
-	if err != nil {
-		log.Fatalf("failed to load configuration, %v", err)
-	}
-
-	dynamodbClient := dynamodb.NewFromConfig(awsConfig)
-
-	getItemsResponse, err := dynamodbClient.Scan(databaseContext, &dynamodb.ScanInput{
-		TableName: aws.String(CELL_TABLE_NAME),
-	})
-
-	if err != nil {
-		log.Fatalf("failed to get items, %v", err)
-	}
-
-	records := []DatabaseCell{}
-	err = attributevalue.UnmarshalListOfMaps(getItemsResponse.Items, &records)
-	if err != nil {
-		log.Println("failed to unmarshal Items, %w", err)
-	}
-	for _, record := range records {
-		log.Println(record.ToString())
-	}
-
-	itemToPut := DatabaseCell{
-		ID:       "A",
-		Resident: "testlandia",
-	}
-	itemToPutMap, err := attributevalue.MarshalMap(itemToPut)
-	if err != nil {
-		log.Fatalf("failed to marshal item, %v", err)
-	}
-
-	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
-		TableName: aws.String(CELL_TABLE_NAME),
-		Item:      itemToPutMap,
-	})
-	if err != nil {
-		log.Fatalf("failed to put item, %v", err)
-	}
-
-	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
-		TableName: aws.String(CELL_TABLE_NAME),
-		Key: map[string]types.AttributeValue{
-			"ID": &types.AttributeValueMemberS{
-				Value: itemToPut.ID,
-			},
-		},
-	})
-
-	updatedItem := DatabaseCell{}
-	err = attributevalue.UnmarshalMap(getItemOutput.Item, &updatedItem)
-	if err != nil {
-		log.Fatalf("failed to unmarshal item, %v", err)
-	}
-
-	log.Println(updatedItem.ToString())
-}
-
 func main() {
 
 	err := godotenv.Load(".env")
@@ -233,7 +160,7 @@ func main() {
 		log.Println("Failed to load .env file:", err.Error())
 	}
 
-	initializeDatabase()
+	dynamodbwrapper.Initialize()
 
 	mux := http.NewServeMux()
 

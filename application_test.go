@@ -54,5 +54,9 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 	assert.Equal(t, 100, theWar.Score)
 	assert.Equal(t, attacker.Id, theWar.Advantage().Id)
 
-	assert.Equal(t, attacker.Id, residentNations.GetResident("A"))
+	newResidentID, err := residentNations.GetResident("A")
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, attacker.Id, newResidentID)
 }

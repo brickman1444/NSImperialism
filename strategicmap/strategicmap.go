@@ -65,32 +65,38 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
+func getTextForTerritory(territoryName string, residents ResidentsInterface, wars []*war.War) string {
+	residentNationID, err := residents.GetResident(territoryName)
+	if err != nil {
+		return err.Error()
+	}
+
+	if residentNationID == "" {
+		return territoryName + " ❓"
+	}
+
+	residentNation, err := nationstates_api.GetNationData(residentNationID)
+	if err != nil {
+		return err.Error()
+	}
+
+	war := war.FindOngoingWarAt(wars, territoryName)
+	if war != nil {
+		return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", war.Attacker.FlagThumbnail())
+	} else {
+		return territoryName + " " + string(residentNation.FlagThumbnail())
+	}
+}
+
 func Render(strategicMap Map, residents ResidentsInterface, wars []*war.War) RenderedMap {
 	renderedMap := RenderedMap{}
 
 	for _, territory := range strategicMap.Territories {
 
-		renderedTerritory := RenderedTerritory{}
-		renderedTerritory.LeftPercent = territory.LeftPercent()
-		renderedTerritory.TopPercent = territory.TopPercent()
-
-		residentNationID := residents.GetResident(territory.Name)
-		if residentNationID != "" {
-
-			residentNation, err := nationstates_api.GetNationData(residentNationID)
-			if err == nil {
-				war := war.FindOngoingWarAt(wars, territory.Name)
-				if war != nil {
-					renderedTerritory.Text = template.HTML(fmt.Sprint(territory.Name, " ", residentNation.FlagThumbnail(), "⚔️", war.Attacker.FlagThumbnail()))
-				} else {
-					renderedTerritory.Text = template.HTML(territory.Name + " " + string(residentNation.FlagThumbnail()))
-				}
-			} else {
-				renderedTerritory.Text = template.HTML(err.Error())
-			}
-
-		} else {
-			renderedTerritory.Text = template.HTML(territory.Name + " ❓")
+		renderedTerritory := RenderedTerritory{
+			LeftPercent: territory.LeftPercent(),
+			TopPercent:  territory.TopPercent(),
+			Text:        template.HTML(getTextForTerritory(territory.Name, residents, wars)),
 		}
 
 		renderedMap.Territories = append(renderedMap.Territories, renderedTerritory)
@@ -114,7 +120,12 @@ func Colonize(residentNations ResidentsInterface, strategicMap Map, colonizer na
 		return fmt.Errorf("No territory exists at %s", target)
 	}
 
-	if residentNations.HasResident(target) {
+	hasResident, err := residentNations.HasResident(target)
+	if err != nil {
+		return err
+	}
+
+	if hasResident {
 		return fmt.Errorf("A nation is already resident at %s", target)
 	}
 
