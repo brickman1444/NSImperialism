@@ -15,7 +15,7 @@ import (
 )
 
 var globalWars []*war.War = []*war.War{}
-var globalResidentNations = strategicmap.NewResidentsSimpleMap()
+var globalResidentNations = strategicmap.ResidentsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = 0
 
