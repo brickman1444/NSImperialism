@@ -65,44 +65,49 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
-func getTextForTerritory(territoryName string, residents ResidentsInterface, wars []*war.War) string {
+func getTextForTerritory(territoryName string, residents ResidentsInterface, wars []*war.War) (string, error) {
 	residentNationID, err := residents.GetResident(territoryName)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	if residentNationID == "" {
-		return territoryName + " ❓"
+		return territoryName + " ❓", nil
 	}
 
 	residentNation, err := nationstates_api.GetNationData(residentNationID)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	war := war.FindOngoingWarAt(wars, territoryName)
 	if war != nil {
-		return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", war.Attacker.FlagThumbnail())
+		return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", war.Attacker.FlagThumbnail()), nil
 	} else {
-		return territoryName + " " + string(residentNation.FlagThumbnail())
+		return territoryName + " " + string(residentNation.FlagThumbnail()), nil
 	}
 }
 
-func Render(strategicMap Map, residents ResidentsInterface, wars []*war.War) RenderedMap {
+func Render(strategicMap Map, residents ResidentsInterface, wars []*war.War) (RenderedMap, error) {
 	renderedMap := RenderedMap{}
 
 	for _, territory := range strategicMap.Territories {
 
+		text, err := getTextForTerritory(territory.Name, residents, wars)
+		if err != nil {
+			return RenderedMap{}, err
+		}
+
 		renderedTerritory := RenderedTerritory{
 			LeftPercent: territory.LeftPercent(),
 			TopPercent:  territory.TopPercent(),
-			Text:        template.HTML(getTextForTerritory(territory.Name, residents, wars)),
+			Text:        template.HTML(text),
 		}
 
 		renderedMap.Territories = append(renderedMap.Territories, renderedTerritory)
 	}
 
-	return renderedMap
+	return renderedMap, nil
 }
 
 func DoesTerritoryExist(strategicMap Map, name string) bool {

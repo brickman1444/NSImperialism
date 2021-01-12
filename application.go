@@ -23,7 +23,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	page := &Page{"", nil, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars), globalYear}
+	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to render map", http.StatusInternalServerError)
+		return
+	}
+
+	page := &Page{"", nil, globalWars, renderedMap, globalYear}
 
 	indexTemplate.Execute(w, page)
 }
@@ -55,7 +62,14 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalWars, strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars), globalYear}
+	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to render map", http.StatusInternalServerError)
+		return
+	}
+
+	page := &Page{searchQuery, nation, globalWars, renderedMap, globalYear}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
