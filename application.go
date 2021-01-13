@@ -168,7 +168,7 @@ func tick(residentNations strategicmap.ResidentsInterface, wars []*war.War, year
 }
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "/assets/uswds-2.10.0/img/flag.svg")
+	http.ServeFile(w, r, "assets/uswds-2.10.0/img/flag.svg")
 }
 
 func main() {
