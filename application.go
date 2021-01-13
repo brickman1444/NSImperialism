@@ -167,6 +167,10 @@ func tick(residentNations strategicmap.ResidentsInterface, wars []*war.War, year
 	}
 }
 
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "/assets/uswds-2.10.0/img/flag.svg")
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -183,9 +187,8 @@ func main() {
 	mux.HandleFunc("/colonize", colonizeHandler)
 	mux.HandleFunc("/tick", tickHandler)
 	mux.HandleFunc("/", indexHandler)
-
-	fileServer := http.FileServer(http.Dir("assets"))
-	mux.Handle("/assets/", http.StripPrefix("/assets/", fileServer))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	mux.HandleFunc("/favicon.ico", faviconHandler)
 
 	http.ListenAndServe(":5000", mux)
 }
