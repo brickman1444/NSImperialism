@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -79,6 +80,7 @@ func GetNationData(nationName string) (*Nation, error) {
 	}
 
 	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?nation=%s;q=census+fullname+flag+demonym;scale=46;mode=prank", url.QueryEscape(nationName))
+	log.Println("Pulling down nation data for ", nationName)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -94,8 +96,13 @@ func GetNationData(nationName string) (*Nation, error) {
 
 	defer response.Body.Close()
 
+	if response.StatusCode == http.StatusTooManyRequests {
+		log.Println("Too many requests to NationStates api. Wait", response.Header.Get("X-Retry-After"), "seconds.")
+		return nil, errors.New("Too many requests to NationStates api")
+	}
+
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("resp.StatusCode: " + strconv.Itoa(response.StatusCode))
+		return nil, errors.New("NationStates API Response Error. StatusCode: " + strconv.Itoa(response.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
