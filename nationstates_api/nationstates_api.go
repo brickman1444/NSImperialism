@@ -16,6 +16,9 @@ import (
 
 const CENSUSSCALEDEFENSEFORCES int = 46
 
+var rateLimitDuration, _ = time.ParseDuration("30s")
+var limiter = NewRateLimiter(40, rateLimitDuration) // API Docs say 50 requests in 30 seconds so I'm being a little conservative so we don't get locked out https://www.nationstates.net/pages/api.html#ratelimits
+
 type CensusScale struct {
 	Id             int `xml:"id,attr"`
 	PercentageRank int `xml:"PRANK"`
@@ -76,11 +79,15 @@ func ParseNation(xmlData []byte) (*Nation, error) {
 func GetNationData(nationName string) (*Nation, error) {
 
 	if nationName == "" {
-		return nil, nil
+		return nil, errors.New("Empty nation name")
+	}
+
+	if limiter.IsAtRateLimit(time.Now()) {
+		return nil, errors.New("Hit internal nationstates API rate limit")
 	}
 
 	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?nation=%s;q=census+fullname+flag+demonym;scale=46;mode=prank", url.QueryEscape(nationName))
-	log.Println("Pulling down nation data for ", nationName)
+	log.Println("Pulling down nation data for", nationName)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -89,6 +96,9 @@ func GetNationData(nationName string) (*Nation, error) {
 	request.Header.Set("User-Agent", "NSImperialism")
 
 	httpClient := &http.Client{Timeout: 10 * time.Second}
+
+	limiter.AddRequestTime(time.Now())
+
 	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
