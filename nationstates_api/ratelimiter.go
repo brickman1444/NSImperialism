@@ -26,6 +26,10 @@ func (limiter *RateLimiter) AddRequestTime(curerntTime time.Time) {
 	defer limiter.mutex.Unlock()
 
 	limiter.queue = append(limiter.queue, curerntTime)
+
+	if len(limiter.queue) > limiter.numberOfRequests {
+		limiter.queue = limiter.queue[1:]
+	}
 }
 
 func (limiter *RateLimiter) IsAtRateLimit(currentTime time.Time) bool {
