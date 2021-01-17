@@ -18,6 +18,8 @@ const CENSUSSCALEDEFENSEFORCES int = 46
 
 var rateLimitDuration, _ = time.ParseDuration("30s")
 var limiter = NewRateLimiter(40, rateLimitDuration) // API Docs say 50 requests in 30 seconds so I'm being a little conservative so we don't get locked out https://www.nationstates.net/pages/api.html#ratelimits
+var cacheExpirationDuration, _ = time.ParseDuration("12h")
+var cache = NewCache(cacheExpirationDuration)
 
 type CensusScale struct {
 	Id             int `xml:"id,attr"`
@@ -82,6 +84,11 @@ func GetNationData(nationName string) (*Nation, error) {
 		return nil, errors.New("Empty nation name")
 	}
 
+	cachedNation := cache.GetNation(nationName, time.Now())
+	if cachedNation != nil {
+		return cachedNation, nil
+	}
+
 	if limiter.IsAtRateLimit(time.Now()) {
 		return nil, errors.New("Hit internal nationstates API rate limit")
 	}
@@ -120,5 +127,12 @@ func GetNationData(nationName string) (*Nation, error) {
 		return nil, err
 	}
 
-	return ParseNation(body)
+	parsedNation, err := ParseNation(body)
+	if err != nil {
+		return nil, err
+	}
+
+	cache.AddNation(parsedNation.Id, *parsedNation, time.Now())
+
+	return parsedNation, nil
 }
