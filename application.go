@@ -14,7 +14,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var globalWars []*war.War = []*war.War{}
+var globalWars = war.NewWarProviderSimpleList()
 var globalResidentNations = strategicmap.ResidentsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = 0
@@ -23,14 +23,21 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
 
-	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars)
+	retrievedWars, err := globalWars.GetWars()
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
+		return
+	}
+
+	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, retrievedWars)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to render map", http.StatusInternalServerError)
 		return
 	}
 
-	page := &Page{"", nil, globalWars, renderedMap, globalYear}
+	page := &Page{"", nil, retrievedWars, renderedMap, globalYear}
 
 	indexTemplate.Execute(w, page)
 }
@@ -38,7 +45,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 type Page struct {
 	Query  string
 	Nation *nationstates_api.Nation
-	Wars   []*war.War
+	Wars   []war.War
 	Map    strategicmap.RenderedMap
 	Year   int
 }
@@ -62,14 +69,21 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, globalWars)
+	retrievedWars, err := globalWars.GetWars()
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
+		return
+	}
+
+	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, retrievedWars)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to render map", http.StatusInternalServerError)
 		return
 	}
 
-	page := &Page{searchQuery, nation, globalWars, renderedMap, globalYear}
+	page := &Page{searchQuery, nation, retrievedWars, renderedMap, globalYear}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
@@ -108,7 +122,14 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentWar := war.FindOngoingWarAt(globalWars, target)
+	retrievedWars, err := globalWars.GetWars()
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
+		return
+	}
+
+	currentWar := war.FindOngoingWarAt(retrievedWars, target)
 	if currentWar != nil {
 		http.Error(w, fmt.Sprintf("There is already a war at %s", target), http.StatusBadRequest)
 		return
@@ -124,7 +145,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	if attacker != nil && len(warName) != 0 {
 		newWar := war.NewWar(attacker, defender, warName, target)
-		globalWars = append(globalWars, &newWar)
+		globalWars.PutWars([]war.War{newWar})
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -151,20 +172,31 @@ func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
 
-	tick(globalResidentNations, globalWars, &globalYear)
+	err := tick(globalResidentNations, &globalWars, &globalYear)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func tick(residentNations strategicmap.ResidentsInterface, wars []*war.War, year *int) {
+func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarProviderInterface, year *int) error {
 	(*year)++
 
-	for _, war := range wars {
-		didFinish := war.Tick()
+	retrievedWars, err := warsProvider.GetWars()
+	if err != nil {
+		return err
+	}
+
+	for warIndex, _ := range retrievedWars {
+		didFinish := retrievedWars[warIndex].Tick()
 		if didFinish {
-			residentNations.SetResident(war.TerritoryName, war.Advantage().Id)
+			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, retrievedWars[warIndex].Advantage().Id)
 		}
 	}
+
+	return warsProvider.PutWars(retrievedWars)
 }
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {

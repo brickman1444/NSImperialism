@@ -71,10 +71,10 @@ func (war *War) ScorePerYearDescription() template.HTML {
 	return template.HTML(fmt.Sprintf("+%d%%%s per year", absoluteScore, advantageDescription))
 }
 
-func FindOngoingWarAt(wars []*War, territoryName string) *War {
+func FindOngoingWarAt(wars []War, territoryName string) *War {
 	for warIndex, war := range wars {
 		if war.TerritoryName == territoryName && war.IsOngoing {
-			return wars[warIndex]
+			return &wars[warIndex]
 		}
 	}
 	return nil

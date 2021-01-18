@@ -128,11 +128,12 @@ func TestFindOngoingWarFindsAWar(t *testing.T) {
 	defender := &nationstates_api.Nation{}
 	attacker := &nationstates_api.Nation{}
 
-	war := NewWar(attacker, defender, "", "A")
+	warAtA := NewWar(attacker, defender, "warAtA", "A")
+	warAtB := NewWar(attacker, defender, "warAtB", "A")
 
-	foundWar := FindOngoingWarAt([]*War{&war}, "A")
+	foundWar := FindOngoingWarAt([]War{warAtA, warAtB}, "A")
 
-	assert.Same(t, &war, foundWar)
+	assert.Equal(t, "warAtA", foundWar.Name)
 }
 
 func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
@@ -142,7 +143,7 @@ func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
 	war := NewWar(attacker, defender, "", "A")
 	war.IsOngoing = false
 
-	foundWar := FindOngoingWarAt([]*War{&war}, "A")
+	foundWar := FindOngoingWarAt([]War{war}, "A")
 
 	assert.Nil(t, foundWar)
 }
