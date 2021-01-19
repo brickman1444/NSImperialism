@@ -48,7 +48,7 @@ func PutCell(cell DatabaseCell) error {
 		return err
 	}
 
-	log.Println("DynamoDB: Put on cell table")
+	log.Println("DynamoDB: Put on cell table:", cell.ID)
 	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
 		TableName: aws.String(cellTableName()),
 		Item:      itemToPutMap,
@@ -58,7 +58,7 @@ func PutCell(cell DatabaseCell) error {
 
 func GetCell(territoryName string) (DatabaseCell, error) {
 
-	log.Println("DynamoDB: Get on cell table")
+	log.Println("DynamoDB: Get on cell table:", territoryName)
 	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
 		TableName: aws.String(cellTableName()),
 		Key: map[string]types.AttributeValue{
@@ -110,7 +110,7 @@ func PutWars(wars []DatabaseWar) error {
 			return err
 		}
 
-		log.Println("DynamoDB: Put on war table")
+		log.Println("DynamoDB: Put on war table:", warToAdd.ID)
 		_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
 			TableName: aws.String(warTableName()),
 			Item:      itemToPutMap,
@@ -125,7 +125,7 @@ func PutWars(wars []DatabaseWar) error {
 
 func GetWars() ([]DatabaseWar, error) {
 
-	log.Println("DynamoDB: Scan on war table")
+	log.Println("DynamoDB: Scan on all of war table")
 	scanOutput, err := dynamodbClient.Scan(databaseContext, &dynamodb.ScanInput{
 		TableName:      aws.String(warTableName()),
 		ConsistentRead: aws.Bool(true),

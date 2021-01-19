@@ -14,7 +14,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var globalWars = war.NewWarProviderSimpleList()
+var globalWars = war.WarProviderDatabase{}
 var globalResidentNations = strategicmap.ResidentsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = 0
