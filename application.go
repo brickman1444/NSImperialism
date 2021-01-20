@@ -37,17 +37,18 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{"", nil, retrievedWars, renderedMap, globalYear}
+	page := &Page{"", nil, retrievedWars, renderedMap, globalYear, nil}
 
 	indexTemplate.Execute(w, page)
 }
 
 type Page struct {
-	Query  string
-	Nation *nationstates_api.Nation
-	Wars   []war.War
-	Map    strategicmap.RenderedMap
-	Year   int
+	Query          string
+	Nation         *nationstates_api.Nation
+	Wars           []war.War
+	Map            strategicmap.RenderedMap
+	Year           int
+	LoggedInNation *nationstates_api.Nation
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +84,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{searchQuery, nation, retrievedWars, renderedMap, globalYear}
+	page := &Page{searchQuery, nation, retrievedWars, renderedMap, globalYear, nil}
 
 	err = indexTemplate.Execute(w, page)
 	if err != nil {
