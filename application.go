@@ -204,6 +204,18 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "assets/uswds-2.10.0/img/flag.svg")
 }
 
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+
+	nationName := r.FormValue("nation_name")
+	verificationCode := r.FormValue("verification_code")
+	if nationName == "" || verificationCode == "" {
+		http.Error(w, "Invalid request to login. Try again.", http.StatusBadRequest)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -222,6 +234,7 @@ func main() {
 	mux.HandleFunc("/", indexHandler)
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	mux.HandleFunc("/favicon.ico", faviconHandler)
+	mux.HandleFunc("/login", loginHandler)
 
 	http.ListenAndServe(":5000", mux)
 }
