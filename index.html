@@ -23,12 +23,11 @@
       {{ else }}
       <h2>Login</h2>
       <form action="/login" method="PUT">
-        <label for="nation_name">Nation Name:</label>
-        <input class="usa-input" value="" id="nation_name" placeholder="e.g. maxtopia" type="text"
-          name="nation_name" required="required" /><br>
-        <label for="verification_code">Verification Code copied from <a href="https://www.nationstates.net/page=verify_login">here</a>:</label>
-        <input class="usa-input" value="" id="verification_code" placeholder="Enter your verification code" type="password"
-          name="verification_code" required="required" /><br>
+        <label>Nation Name<input class="usa-input" value="" id="nation_name" placeholder="maxtopia" type="text"
+          name="nation_name" required="required" /></label><br>
+        <label>Verification Code copied from <a href="https://www.nationstates.net/page=verify_login">here</a>
+        <input class="usa-input" value="" id="verification_code" placeholder="abcd1234" type="password"
+          name="verification_code" required="required" /></label><br>
         <button type="submit" class="usa-button">Login</button>
       </form>
       {{ end }}

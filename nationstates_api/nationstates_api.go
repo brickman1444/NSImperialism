@@ -136,3 +136,48 @@ func GetNationData(nationName string) (*Nation, error) {
 
 	return parsedNation, nil
 }
+
+func IsCorrectVerificationCode(nationName string, verificationCode string) (bool, error) {
+
+	if limiter.IsAtRateLimit(time.Now()) {
+		return false, errors.New("Hit internal nationstates API rate limit")
+	}
+
+	url := fmt.Sprintf("https://www.nationstates.net/cgi-bin/api.cgi?a=verify&nation=%s&checksum=%s", url.QueryEscape(nationName), url.QueryEscape(verificationCode))
+	log.Println("Verifying nation", nationName)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return false, err
+	}
+
+	request.Header.Set("User-Agent", "NSImperialism")
+
+	httpClient := &http.Client{Timeout: 10 * time.Second}
+
+	limiter.AddRequestTime(time.Now())
+
+	response, err := httpClient.Do(request)
+	if err != nil {
+		return false, err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusTooManyRequests {
+		log.Println("Too many requests to NationStates api. Wait", response.Header.Get("X-Retry-After"), "seconds.")
+		return false, errors.New("Too many requests to NationStates api")
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return false, errors.New("NationStates API Response Error. StatusCode: " + strconv.Itoa(response.StatusCode))
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, err
+	}
+
+	bodyString := string(body)
+
+	return strings.HasPrefix(bodyString, "1"), nil
+}

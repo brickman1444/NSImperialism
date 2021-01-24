@@ -213,6 +213,19 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isVerified, err := nationstates_api.IsCorrectVerificationCode(nationName, verificationCode)
+	if err != nil {
+		log.Println("Failed to verify nation", nationName, err.Error())
+		http.Error(w, "Failed to verify nation", http.StatusInternalServerError)
+		return
+	}
+
+	if isVerified {
+		w.Header().Add("verified", "yes")
+	} else {
+		w.Header().Add("verified", "no")
+	}
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
