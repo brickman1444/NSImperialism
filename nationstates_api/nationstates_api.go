@@ -78,11 +78,17 @@ func ParseNation(xmlData []byte) (*Nation, error) {
 	return nation, nil
 }
 
+func GetCanonicalName(inNationName string) string {
+	return strings.ReplaceAll(strings.ToLower(inNationName), " ", "_")
+}
+
 func GetNationData(nationName string) (*Nation, error) {
 
 	if nationName == "" {
 		return nil, errors.New("Empty nation name")
 	}
+
+	nationName = GetCanonicalName(nationName)
 
 	cachedNation := cache.GetNation(nationName, time.Now())
 	if cachedNation != nil {

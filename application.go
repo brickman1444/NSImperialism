@@ -247,7 +247,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
-	nationName := r.FormValue("nation_name")
+	nationName := nationstates_api.GetCanonicalName(r.FormValue("nation_name"))
 	verificationCode := r.FormValue("verification_code")
 	if nationName == "" || verificationCode == "" {
 		http.Error(w, "Invalid request to login. Try again.", http.StatusBadRequest)
@@ -261,11 +261,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isVerified {
-		w.Header().Add("verified", "yes")
-	} else {
-		w.Header().Add("verified", "no")
-	}
+	log.Println(nationName, "verified:", strconv.FormatBool(isVerified))
 
 	sessionIDBytes := sha1.Sum([]byte(nationName + strconv.Itoa(rand.Int())))
 	sessionIDString := base64.URLEncoding.EncodeToString(sessionIDBytes[:]) // [:] converts slice to array

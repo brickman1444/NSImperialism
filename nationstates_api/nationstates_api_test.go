@@ -52,3 +52,18 @@ func TestFlagThumbnailURLsAreGeneratedToMatchTheHostedImageURLs(t *testing.T) {
 
 	assert.Equal(t, "https://www.nationstates.net/images/flags/Eritreat2.png", eritrea.FlagThumbnailURL())
 }
+
+func TestCanonicalNameLowerCaseAndWithoutSpacesStaysTheSame(t *testing.T) {
+	assert.Equal(t, "testlandia", GetCanonicalName("testlandia"))
+	assert.Equal(t, "the_mechalus", GetCanonicalName("the_mechalus"))
+}
+
+func TestCanonicalNameSpacesReplacedWithUnderscores(t *testing.T) {
+	assert.Equal(t, "the_mechalus", GetCanonicalName("the mechalus"))
+	assert.Equal(t, "the_west_pacific", GetCanonicalName("The West Pacific"))
+}
+
+func TestCanonicalNameUpperCaseChangedToLowerCase(t *testing.T) {
+	assert.Equal(t, "the_mechalus", GetCanonicalName("The_Mechalus"))
+	assert.Equal(t, "the_west_pacific", GetCanonicalName("The West Pacific"))
+}
