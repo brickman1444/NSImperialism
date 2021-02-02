@@ -1,14 +1,22 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/brickman1444/NSImperialism/dynamodbwrapper"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
+	"github.com/brickman1444/NSImperialism/session"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
 	"github.com/joho/godotenv"
@@ -18,6 +26,37 @@ var globalWars = war.WarProviderDatabase{}
 var globalResidentNations = strategicmap.ResidentsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = 0
+var globalSessionManager = session.NewSessionManager()
+
+const SESSION_COOKIE_NAME = "SessionID"
+const SESSION_COOKIE_SEPARATOR = ":"
+
+func getLoggedInNationFromCookie(r *http.Request) *nationstates_api.Nation {
+	sessionCookie, err := r.Cookie(SESSION_COOKIE_NAME)
+	if err != nil {
+		return nil // Cookie returns ErrNoCookie if the cookie isn't found
+	}
+
+	tokens := strings.Split(sessionCookie.Value, SESSION_COOKIE_SEPARATOR)
+	if len(tokens) != 2 {
+		return nil
+	}
+
+	nationName := tokens[0]
+	sessionIDString := tokens[1]
+
+	isValid := globalSessionManager.IsValidSession(nationName, sessionIDString, time.Now())
+	if !isValid {
+		return nil
+	}
+
+	nation, err := nationstates_api.GetNationData(nationName)
+	if err != nil {
+		return nil
+	}
+
+	return nation
+}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -37,7 +76,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{"", nil, retrievedWars, renderedMap, globalYear, nil}
+	loggedInNation := getLoggedInNationFromCookie(r)
+
+	page := &Page{"", nil, retrievedWars, renderedMap, globalYear, loggedInNation}
 
 	indexTemplate.Execute(w, page)
 }
@@ -190,7 +231,7 @@ func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarP
 		return err
 	}
 
-	for warIndex, _ := range retrievedWars {
+	for warIndex := range retrievedWars {
 		didFinish := retrievedWars[warIndex].Tick()
 		if didFinish {
 			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, retrievedWars[warIndex].Advantage().Id)
@@ -226,7 +267,37 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("verified", "no")
 	}
 
+	sessionIDBytes := sha1.Sum([]byte(nationName + strconv.Itoa(rand.Int())))
+	sessionIDString := base64.URLEncoding.EncodeToString(sessionIDBytes[:]) // [:] converts slice to array
+
+	cookieValue := nationName + SESSION_COOKIE_SEPARATOR + sessionIDString
+	expire := time.Now().AddDate(0, 0, 1)
+	cookie := http.Cookie{Name: SESSION_COOKIE_NAME, Value: cookieValue, Expires: expire, HttpOnly: true}
+
+	globalSessionManager.AddSession(nationName, sessionIDString, expire)
+
+	http.SetCookie(w, &cookie)
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func DoAllEnvironmentVariablesExist() bool {
+
+	variableNames := []string{
+		"AWS_REGION",
+		"AWS_ACCESS_KEY_ID",
+		"AWS_SECRET_KEY",
+		"CELL_TABLE_NAME",
+		"WAR_TABLE_NAME",
+	}
+
+	for _, variable := range variableNames {
+		if os.Getenv(variable) == "" {
+			return false
+		}
+	}
+
+	return true
 }
 
 func main() {
