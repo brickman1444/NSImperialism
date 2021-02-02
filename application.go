@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -90,48 +89,6 @@ type Page struct {
 	Map            strategicmap.RenderedMap
 	Year           int
 	LoggedInNation *nationstates_api.Nation
-}
-
-func searchHandler(w http.ResponseWriter, r *http.Request) {
-
-	var indexTemplate = template.Must(template.ParseFiles("index.html"))
-
-	url, err := url.Parse(r.URL.String())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	params := url.Query()
-	searchQuery := params.Get("q")
-
-	nation, err := nationstates_api.GetNationData(searchQuery)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	retrievedWars, err := globalWars.GetWars()
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
-		return
-	}
-
-	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, retrievedWars)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to render map", http.StatusInternalServerError)
-		return
-	}
-
-	page := &Page{searchQuery, nation, retrievedWars, renderedMap, globalYear, nil}
-
-	err = indexTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
@@ -307,7 +264,6 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/war", warHandler)
 	mux.HandleFunc("/colonize", colonizeHandler)
 	mux.HandleFunc("/tick", tickHandler)

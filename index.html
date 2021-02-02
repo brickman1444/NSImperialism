@@ -20,6 +20,7 @@
       {{ if .LoggedInNation }}
       <h2>Your Nation</h2>
       {{ .LoggedInNation.FlagAndName }}
+      <div>Defense Forces: Top {{.LoggedInNation.GetDefenseForces }}% in the world</div>
       {{ else }}
       <h2>Login</h2>
       <form action="/login" method="PUT">
@@ -85,18 +86,6 @@
         {{ end }}
       </dl>
       {{ end }}
-      {{ end }}
-      <h2>View a Nation's Statistics</h2>
-      <div>
-        <form action="/search" method="GET">
-          <input class="usa-search" value="{{ .Query }}" placeholder="Enter a nation name" type="search"
-            name="q" required="required" />
-          <button type="submit" class="usa-button">Submit</button>
-        </form>
-      </div>
-      {{ if .Nation }}
-      <h2><img src="{{ .Nation.FlagURL }}" height="50" /><a href="{{ .Nation.GetURL }}">{{.Nation.Name }}</a></h2>
-      <div>Defense Forces: Top {{.Nation.GetDefenseForces }}% in the world</div>
       {{ end }}
     </body>
     <footer class="usa-footer">
