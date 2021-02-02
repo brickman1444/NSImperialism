@@ -93,13 +93,9 @@ type Page struct {
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
 
-	attackerName := r.FormValue("attacker")
-	attacker, err := nationstates_api.GetNationData(attackerName)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	} else if attacker == nil {
-		http.Error(w, fmt.Sprintf("%s not found", attackerName), http.StatusNotFound)
+	attacker := getLoggedInNationFromCookie(r)
+	if attacker == nil {
+		http.Error(w, "You must be logged in to attack", http.StatusBadRequest)
 		return
 	}
 
@@ -152,15 +148,15 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 func colonizeHandler(w http.ResponseWriter, r *http.Request) {
 
-	colonizer, err := nationstates_api.GetNationData(r.FormValue("colonizer"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	colonizer := getLoggedInNationFromCookie(r)
+	if colonizer == nil {
+		http.Error(w, "You must be logged in to colonize", http.StatusBadRequest)
 		return
 	}
 
 	target := r.FormValue("target")
 
-	err = strategicmap.Colonize(&globalResidentNations, globalStrategicMap, *colonizer, target)
+	err := strategicmap.Colonize(&globalResidentNations, globalStrategicMap, *colonizer, target)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

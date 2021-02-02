@@ -48,11 +48,9 @@
       <form action="/tick" method="POST">
         <button type="submit" class="usa-button">Proceed To Next Year</button>
       </form>
+      {{ if .LoggedInNation }}
       <h2>Colonize</h2>
       <form action="/colonize" method="POST">
-        <label for="colonizer">Colonizer:</label>
-        <input type="text" id="colonizer" name="colonizer" placeholder="Enter a nation name"
-          required="required"><br><br>
         <label for="target">Target:</label>
         <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
           pattern="[A-R]"><br><br>
@@ -60,13 +58,12 @@
       </form>
       <h2>Conquer</h2>
       <form action="/war" method="POST">
-        <label for="attacker">Attacker:</label>
-        <input type="text" id="attacker" name="attacker" placeholder="Enter a nation name" required="required"><br><br>
         <label for="target">Target:</label>
         <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
           pattern="[A-R]"><br><br>
         <button type="submit" class="usa-button">Start War</button>
       </form>
+      {{ end }}
       {{ if .Wars }}
       <h2>Wars</h2>
       {{ range .Wars }}
