@@ -1,6 +1,7 @@
 package war
 
 import (
+	"math"
 	"testing"
 
 	"github.com/brickman1444/NSImperialism/nationstates_api"
@@ -90,15 +91,18 @@ func TestATickedWarChangesScore(t *testing.T) {
 
 	war := NewWar(attacker, defender, "", "")
 
-	assert.Equal(t, 0, war.Score)
+	scoreTurnZero := war.Score
+	assert.Equal(t, 0, scoreTurnZero)
 
 	war.Tick()
 
-	assert.Equal(t, 50, war.Score)
+	scoreTurnOne := war.Score
+	assert.NotEqual(t, scoreTurnZero, scoreTurnOne)
 
 	war.Tick()
 
-	assert.Equal(t, 100, war.Score)
+	scoreTurnTwo := war.Score
+	assert.NotEqual(t, scoreTurnOne, scoreTurnTwo)
 }
 
 func TestATickedWarCanEnd(t *testing.T) {
@@ -113,14 +117,15 @@ func TestATickedWarCanEnd(t *testing.T) {
 
 	assert.True(t, war.IsOngoing)
 
-	didFinish := war.Tick()
+	turnCount := 0
+	maximumTurnCount := 1000
+	finalTickResult := false
+	for war.IsOngoing && turnCount < maximumTurnCount {
+		finalTickResult = war.Tick()
+		turnCount++
+	}
 
-	assert.False(t, didFinish)
-	assert.True(t, war.IsOngoing)
-
-	didFinish = war.Tick()
-
-	assert.True(t, didFinish)
+	assert.True(t, finalTickResult)
 	assert.False(t, war.IsOngoing)
 }
 
@@ -146,4 +151,56 @@ func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
 	foundWar := FindOngoingWarAt([]War{war}, "A")
 
 	assert.Nil(t, foundWar)
+}
+
+func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
+
+	defender := &nationstates_api.Nation{Id: "Defender"}
+	defender.SetDefenseForces(60)
+
+	attacker := &nationstates_api.Nation{Id: "Attacker"}
+	attacker.SetDefenseForces(40)
+
+	attackerWinCount := 0
+	defenderWinCount := 0
+	totalLength := 0
+	minimumLength := math.MaxInt32
+	maximumLength := 0
+
+	totalNumberOfSimulations := 10000
+
+	for warIndex := 0; warIndex < totalNumberOfSimulations; warIndex++ {
+		war := NewWar(attacker, defender, "", "")
+
+		length := 0
+		for war.IsOngoing {
+			war.Tick()
+			length++
+		}
+
+		winner := war.Advantage()
+		if winner != nil && winner.Id == attacker.Id {
+			attackerWinCount++
+		} else {
+			defenderWinCount++
+		}
+
+		totalLength = totalLength + length
+
+		if length < minimumLength {
+			minimumLength = length
+		}
+		if length > maximumLength {
+			maximumLength = length
+		}
+	}
+
+	averageLength := float32(totalLength) / float32(totalNumberOfSimulations)
+
+	assert.Greater(t, attackerWinCount, totalNumberOfSimulations/10)
+	assert.Greater(t, defenderWinCount, totalNumberOfSimulations/10)
+	assert.Greater(t, attackerWinCount, defenderWinCount)
+	assert.Greater(t, minimumLength, 2)
+	assert.Less(t, maximumLength, 70)
+	assert.Less(t, averageLength, float32(9))
 }

@@ -34,30 +34,59 @@ func TestParseHTMLTemplates(t *testing.T) {
 }
 
 func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
-	defender := &nationstates_api.Nation{Id: "Defender"}
-	defender.SetDefenseForces(100)
 
-	attacker := &nationstates_api.Nation{Id: "Attacker"}
-	attacker.SetDefenseForces(0)
+	for simulationCount := 0; simulationCount < 1000; simulationCount++ {
+		defender := &nationstates_api.Nation{Id: "Defender"}
+		defender.SetDefenseForces(100)
 
-	theWar := war.NewWar(attacker, defender, "", "A")
+		attacker := &nationstates_api.Nation{Id: "Attacker"}
+		attacker.SetDefenseForces(0)
 
-	residentNations := strategicmap.NewResidentsSimpleMap()
-	residentNations.SetResident("A", defender.Id)
+		theWar := war.NewWar(attacker, defender, "", "A")
 
-	warProvider := war.NewWarProviderSimpleList()
-	err := warProvider.PutWars([]war.War{theWar})
-	assert.NoError(t, err)
+		residentNations := strategicmap.NewResidentsSimpleMap()
+		residentNations.SetResident("A", defender.Id)
 
-	year := 0
+		warProvider := war.NewWarProviderSimpleList()
+		err := warProvider.PutWars([]war.War{theWar})
+		assert.NoError(t, err)
 
-	tick(residentNations, &warProvider, &year)
+		year := 0
 
-	newResidentID, err := residentNations.GetResident("A")
+		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
-	assert.NoError(t, err)
+			tick(residentNations, &warProvider, &year)
 
-	assert.Equal(t, attacker.Id, newResidentID)
+			wars, err := warProvider.GetWars()
+			assert.NoError(t, err)
+			assert.Len(t, wars, 1)
+
+			if !wars[0].IsOngoing {
+				break
+			}
+		}
+
+		wars, err := warProvider.GetWars()
+		assert.NoError(t, err)
+		assert.Len(t, wars, 1)
+
+		finishedWar := wars[0]
+		assert.False(t, finishedWar.IsOngoing)
+
+		if finishedWar.Advantage().Id == attacker.Id {
+			newResidentID, err := residentNations.GetResident("A")
+
+			assert.NoError(t, err)
+
+			assert.Equal(t, attacker.Id, newResidentID)
+		} else {
+			newResidentID, err := residentNations.GetResident("A")
+
+			assert.NoError(t, err)
+
+			assert.Equal(t, defender.Id, newResidentID)
+		}
+	}
 }
 
 func TestApplicationTickUpdatesWars(t *testing.T) {
@@ -84,6 +113,5 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 	assert.Len(t, retrievedWars, 1)
 
 	assert.Equal(t, "warForA", retrievedWars[0].Name)
-	assert.Equal(t, 100, retrievedWars[0].Score)
-	assert.False(t, retrievedWars[0].IsOngoing)
+	assert.NotEqual(t, 0, retrievedWars[0].Score)
 }

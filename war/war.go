@@ -3,6 +3,7 @@ package war
 import (
 	"fmt"
 	"html/template"
+	"math/rand"
 
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
@@ -80,10 +81,23 @@ func FindOngoingWarAt(wars []War, territoryName string) *War {
 	return nil
 }
 
+const battleScoreDelta = 40 // TODO: This should be 10 * number of years the war has been ongoing
+
 func (war *War) Tick() bool {
 
 	if war.IsOngoing {
-		war.Score += war.ScoreChangePerYear()
+
+		// TODO: This should be divided by the number of territories controlled
+		defenderDefenseForcesInverted := 100 - war.Defender.GetDefenseForces()
+		attackerDefenseForcesInverted := 100 - war.Attacker.GetDefenseForces()
+
+		randomRoll := rand.Intn(defenderDefenseForcesInverted + attackerDefenseForcesInverted)
+
+		if randomRoll < defenderDefenseForcesInverted {
+			war.Score -= battleScoreDelta
+		} else {
+			war.Score += battleScoreDelta
+		}
 
 		if Abs(war.Score) >= 100 {
 			war.IsOngoing = false
