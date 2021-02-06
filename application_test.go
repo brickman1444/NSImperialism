@@ -51,7 +51,7 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		err := warProvider.PutWars([]war.War{theWar})
 		assert.NoError(t, err)
 
-		year := 0
+		year := strategicmap.YearSimpleProvider{}
 
 		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
@@ -103,7 +103,7 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 	err := warProvider.PutWars([]war.War{war.NewWar(attacker, defender, "warForA", "A")})
 	assert.NoError(t, err)
 
-	year := 0
+	year := strategicmap.YearSimpleProvider{}
 
 	tick(residentNations, &warProvider, &year)
 

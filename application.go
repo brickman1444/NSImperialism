@@ -24,7 +24,7 @@ import (
 var globalWars = war.WarProviderDatabase{}
 var globalResidentNations = strategicmap.ResidentsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
-var globalYear = 0
+var globalYear = strategicmap.YearSimpleProvider{}
 var globalSessionManager = session.NewSessionManager()
 
 const SESSION_COOKIE_NAME = "SessionID"
@@ -77,7 +77,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{"", nil, retrievedWars, renderedMap, globalYear, loggedInNation}
+	page := &Page{"", nil, retrievedWars, renderedMap, globalYear.Get(), loggedInNation}
 
 	indexTemplate.Execute(w, page)
 }
@@ -176,8 +176,9 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarProviderInterface, year *int) error {
-	(*year)++
+func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarProviderInterface, year strategicmap.YearInterface) error {
+
+	year.Increment()
 
 	retrievedWars, err := warsProvider.GetWars()
 	if err != nil {
