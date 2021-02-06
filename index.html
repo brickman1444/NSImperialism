@@ -65,8 +65,9 @@
       </form>
       {{ end }}
       {{ if .Wars }}
-      <h2>Wars</h2>
+      <h2>Ongoing Wars</h2>
       {{ range .Wars }}
+      {{ if .IsOngoing }}
       <h3>{{ .Name }}</h3>
       <dl>
         <dt>Attacker</dt>
@@ -81,6 +82,7 @@
         <dd>{{ .Advantage.FlagAndName }}</dd>
         {{ end }}
       </dl>
+      {{ end }}
       {{ end }}
       {{ end }}
     </body>
