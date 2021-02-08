@@ -27,18 +27,22 @@ func Initialize() {
 	dynamodbClient = dynamodb.NewFromConfig(awsConfig)
 }
 
+func getTableName(enviromentVariable string, productionTableName string) string {
+	environmentVariableValue, doesEnvironmentVariableExist := os.LookupEnv(enviromentVariable)
+	if doesEnvironmentVariableExist {
+		return environmentVariableValue
+	}
+
+	return productionTableName
+}
+
 type DatabaseCell struct {
 	ID       string
 	Resident string
 }
 
 func cellTableName() string {
-	environmentVariableValue, doesEnvironmentVariableExist := os.LookupEnv("CELL_TABLE_NAME")
-	if doesEnvironmentVariableExist {
-		return environmentVariableValue
-	}
-
-	return "nsimperialism-cell"
+	return getTableName("CELL_TABLE_NAME", "nsimperialism-cell")
 }
 
 func PutCell(cell DatabaseCell) error {
@@ -94,12 +98,7 @@ type DatabaseWar struct {
 }
 
 func warTableName() string {
-	environmentVariableValue, doesEnvironmentVariableExist := os.LookupEnv("WAR_TABLE_NAME")
-	if doesEnvironmentVariableExist {
-		return environmentVariableValue
-	}
-
-	return "nsimperialism-war"
+	return getTableName("WAR_TABLE_NAME", "nsimperialism-war")
 }
 
 func PutWars(wars []DatabaseWar) error {
@@ -141,4 +140,56 @@ func GetWars() ([]DatabaseWar, error) {
 	}
 
 	return warsToReturn, nil
+}
+
+func mapTableName() string {
+	return getTableName("MAP_TABLE_NAME", "nsimperialism-map")
+}
+
+type DatabaseMap struct {
+	ID   string
+	Year int
+}
+
+func GetMap() (DatabaseMap, error) {
+	log.Println("DynamoDB: Get on map table")
+	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
+		TableName: aws.String(mapTableName()),
+		Key: map[string]types.AttributeValue{
+			"ID": &types.AttributeValueMemberS{
+				Value: "the-map",
+			},
+		},
+	})
+
+	if err != nil {
+		return DatabaseMap{}, err
+	}
+
+	if len(getItemOutput.Item) == 0 {
+		return DatabaseMap{}, nil // Map entry doesn't exist. Start with default map
+	}
+
+	gotItem := DatabaseMap{}
+	err = attributevalue.UnmarshalMap(getItemOutput.Item, &gotItem)
+	if err != nil {
+		return DatabaseMap{}, err
+	}
+
+	return gotItem, nil
+}
+
+func PutMap(item DatabaseMap) error {
+
+	itemToPutMap, err := attributevalue.MarshalMap(item)
+	if err != nil {
+		return err
+	}
+
+	log.Println("DynamoDB: Put on map table")
+	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
+		TableName: aws.String(mapTableName()),
+		Item:      itemToPutMap,
+	})
+	return err
 }

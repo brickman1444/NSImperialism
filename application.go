@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -77,7 +76,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{"", nil, retrievedWars, renderedMap, globalYear.Get(), loggedInNation}
+	year, err := globalYear.Get()
+	if err != nil {
+		http.Error(w, "Failed to get year", http.StatusInternalServerError)
+		return
+	}
+
+	page := &Page{"", nil, retrievedWars, renderedMap, year, loggedInNation}
 
 	indexTemplate.Execute(w, page)
 }
@@ -178,7 +183,10 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 
 func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarProviderInterface, year strategicmap.YearInterface) error {
 
-	year.Increment()
+	err := year.Increment()
+	if err != nil {
+		return err
+	}
 
 	retrievedWars, err := warsProvider.GetWars()
 	if err != nil {
@@ -229,25 +237,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func DoAllEnvironmentVariablesExist() bool {
-
-	variableNames := []string{
-		"AWS_REGION",
-		"AWS_ACCESS_KEY_ID",
-		"AWS_SECRET_KEY",
-		"CELL_TABLE_NAME",
-		"WAR_TABLE_NAME",
-	}
-
-	for _, variable := range variableNames {
-		if os.Getenv(variable) == "" {
-			return false
-		}
-	}
-
-	return true
 }
 
 func main() {
