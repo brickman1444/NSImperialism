@@ -23,7 +23,7 @@ import (
 var globalWars = war.WarProviderDatabase{}
 var globalResidentNations = strategicmap.ResidentsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
-var globalYear = strategicmap.YearSimpleProvider{}
+var globalYear = strategicmap.YearDatabaseProvider{}
 var globalSessionManager = session.NewSessionManager()
 
 const SESSION_COOKIE_NAME = "SessionID"
