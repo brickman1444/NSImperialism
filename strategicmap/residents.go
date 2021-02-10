@@ -6,6 +6,7 @@ type ResidentsInterface interface {
 	SetResident(territoryName string, nationID string) error
 	GetResident(territoryName string) (string, error)
 	HasResident(territoryName string) (bool, error)
+	CanExpand(nationID string) (bool, error)
 }
 
 type ResidentsSimpleMap struct {
@@ -28,6 +29,10 @@ func (simpleMap ResidentsSimpleMap) GetResident(territoryName string) (string, e
 func (simpleMap ResidentsSimpleMap) HasResident(territoryName string) (bool, error) {
 	_, doesExist := simpleMap.residents[territoryName]
 	return doesExist, nil
+}
+
+func (simpleMap ResidentsSimpleMap) CanExpand(nationID string) (bool, error) {
+	return true, nil
 }
 
 var simpleMapInterfaceChecker ResidentsInterface = ResidentsSimpleMap{}
@@ -64,6 +69,10 @@ func (database ResidentsDatabase) HasResident(territoryName string) (bool, error
 		return false, err
 	}
 
+	return true, nil
+}
+
+func (database ResidentsDatabase) CanExpand(nationID string) (bool, error) {
 	return true, nil
 }
 

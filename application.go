@@ -82,7 +82,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation}
+	canExpand := false
+
+	if loggedInNation != nil {
+		canExpand, err = globalResidentNations.CanExpand(loggedInNation.Id)
+		if err != nil {
+			http.Error(w, "Failed to get whether nation can expand", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand}
 
 	indexTemplate.Execute(w, page)
 }
@@ -93,6 +103,7 @@ type Page struct {
 	Map            strategicmap.RenderedMap
 	Year           int
 	LoggedInNation *nationstates_api.Nation
+	CanColonize    bool
 }
 
 func warHandler(w http.ResponseWriter, r *http.Request) {

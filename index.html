@@ -50,12 +50,16 @@
       </form>
       {{ if .LoggedInNation }}
       <h2>Colonize</h2>
+      {{ if .CanColonize }}
       <form action="/colonize" method="POST">
         <label for="target">Target:</label>
         <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
           pattern="[A-R]"><br><br>
         <button type="submit" class="usa-button">Claim</button>
       </form>
+      {{ else }}
+      Your Economy must be larger to expand into more territory.
+      {{ end }}
       <h2>Conquer</h2>
       <form action="/war" method="POST">
         <label for="target">Target:</label>
