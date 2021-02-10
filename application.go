@@ -82,13 +82,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{"", nil, retrievedWars, renderedMap, year, loggedInNation}
+	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation}
 
 	indexTemplate.Execute(w, page)
 }
 
 type Page struct {
-	Query          string
 	Nation         *nationstates_api.Nation
 	Wars           []war.War
 	Map            strategicmap.RenderedMap
