@@ -118,23 +118,3 @@ func DoesTerritoryExist(strategicMap Map, name string) bool {
 	}
 	return false
 }
-
-func Colonize(residentNations ResidentsInterface, strategicMap Map, colonizer nationstates_api.Nation, target string) error {
-
-	if !DoesTerritoryExist(strategicMap, target) {
-		return fmt.Errorf("No territory exists at %s", target)
-	}
-
-	hasResident, err := residentNations.HasResident(target)
-	if err != nil {
-		return err
-	}
-
-	if hasResident {
-		return fmt.Errorf("A nation is already resident at %s", target)
-	}
-
-	residentNations.SetResident(target, colonizer.Id)
-
-	return nil
-}

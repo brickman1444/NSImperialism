@@ -102,7 +102,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, false, mapIDs}
+	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, mapIDs}
 
 	renderPage(w, "index.html", page)
 }
@@ -112,7 +112,6 @@ type Page struct {
 	Map            strategicmap.RenderedMap
 	Year           int
 	LoggedInNation *nationstates_api.Nation
-	CanColonize    bool
 	Maps           []string
 }
 
@@ -166,25 +165,6 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	if attacker != nil && len(warName) != 0 {
 		newWar := war.NewWar(attacker, defender, warName, target)
 		globalWars.PutWars([]war.War{newWar})
-	}
-
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func colonizeHandler(w http.ResponseWriter, r *http.Request) {
-
-	colonizer := getLoggedInNationFromCookie(r)
-	if colonizer == nil {
-		http.Error(w, "You must be logged in to colonize", http.StatusBadRequest)
-		return
-	}
-
-	target := r.FormValue("target")
-
-	err := strategicmap.Colonize(&globalResidentNations, globalStrategicMap, *colonizer, target)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -283,17 +263,7 @@ func mapsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	canExpand := false
-
-	if loggedInNation != nil {
-		canExpand, err = globalResidentNations.CanExpand(loggedInNation.Id)
-		if err != nil {
-			http.Error(w, "Failed to get whether nation can expand", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	page := &Page{retrievedWars, renderedMap, year, loggedInNation, canExpand, []string{}}
+	page := &Page{retrievedWars, renderedMap, year, loggedInNation, []string{}}
 
 	renderPage(w, "map.html", page)
 }
@@ -310,7 +280,6 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/war", warHandler)
-	mux.HandleFunc("/colonize", colonizeHandler)
 	mux.HandleFunc("/tick", tickHandler)
 	mux.HandleFunc("/", indexHandler)
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
