@@ -287,7 +287,79 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mapsHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	mapTemplate, err := template.ParseFiles("map.html")
+	if err != nil {
+		http.Error(w, "Failed parse HTML body", http.StatusInternalServerError)
+		return
+	}
+	headerTemplate, err := template.ParseFiles("header.html")
+	if err != nil {
+		http.Error(w, "Failed parse HTML header", http.StatusInternalServerError)
+		return
+	}
+	footerTemplate, err := template.ParseFiles("footer.html")
+	if err != nil {
+		http.Error(w, "Failed parse HTML footer", http.StatusInternalServerError)
+		return
+	}
+
+	retrievedWars, err := globalWars.GetWars()
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
+		return
+	}
+
+	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, retrievedWars)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to render map", http.StatusInternalServerError)
+		return
+	}
+
+	loggedInNation := getLoggedInNationFromCookie(r)
+
+	year, err := globalYear.Get()
+	if err != nil {
+		http.Error(w, "Failed to get year", http.StatusInternalServerError)
+		return
+	}
+
+	canExpand := false
+
+	if loggedInNation != nil {
+		canExpand, err = globalResidentNations.CanExpand(loggedInNation.Id)
+		if err != nil {
+			http.Error(w, "Failed to get whether nation can expand", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	mapIDs, err := globalResidentNations.GetAllMapIDs()
+	if err != nil {
+		http.Error(w, "Failed to get map IDs", http.StatusInternalServerError)
+		return
+	}
+
+	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, mapIDs}
+
+	err = headerTemplate.Execute(w, page)
+	if err != nil {
+		http.Error(w, "Failed render HTML header", http.StatusInternalServerError)
+		return
+	}
+
+	err = mapTemplate.Execute(w, page)
+	if err != nil {
+		http.Error(w, "Failed render HTML body", http.StatusInternalServerError)
+		return
+	}
+
+	err = footerTemplate.Execute(w, page)
+	if err != nil {
+		http.Error(w, "Failed render HTML footer", http.StatusInternalServerError)
+		return
+	}
 }
 
 func main() {
@@ -308,7 +380,7 @@ func main() {
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.HandleFunc("/login", loginHandler)
-	mux.HandleFunc("/maps", mapsHandler)
+	mux.HandleFunc("/maps/", mapsHandler)
 
 	http.ListenAndServe(":5000", mux)
 }
