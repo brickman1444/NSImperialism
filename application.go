@@ -92,7 +92,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand}
+	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, []string{"the-map"}}
 
 	indexTemplate.Execute(w, page)
 }
@@ -104,6 +104,7 @@ type Page struct {
 	Year           int
 	LoggedInNation *nationstates_api.Nation
 	CanColonize    bool
+	Maps           []string
 }
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
