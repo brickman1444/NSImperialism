@@ -17,6 +17,7 @@ import (
 	"github.com/brickman1444/NSImperialism/session"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
@@ -277,15 +278,15 @@ func main() {
 
 	dynamodbwrapper.Initialize()
 
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
 
-	mux.HandleFunc("/war", warHandler)
-	mux.HandleFunc("/tick", tickHandler)
-	mux.HandleFunc("/", indexHandler)
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	mux.HandleFunc("/favicon.ico", faviconHandler)
-	mux.HandleFunc("/login", loginHandler)
-	mux.HandleFunc("/maps/", mapsHandler)
+	mux.HandleFunc("/war", warHandler).Methods("POST")
+	mux.HandleFunc("/tick", tickHandler).Methods("POST")
+	mux.HandleFunc("/", indexHandler).Methods("GET")
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets")))).Methods("GET")
+	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")
+	mux.HandleFunc("/login", loginHandler).Methods("PUT")
+	mux.HandleFunc("/maps/{id}", mapsHandler).Methods("GET")
 
 	http.ListenAndServe(":5000", mux)
 }
