@@ -8,14 +8,13 @@
   <link rel="stylesheet" href="/assets/stylesheets/style.css?ver=2" />
 </head>
 
-<body class="usa-section--dark">
-  <main>
+  <body class="usa-section--dark">
     <header class="usa-header">
       <h1><a href="/">NSImperialism (Alpha)</a></h1>
       <p>The server may reset the state of the game at any time.</p>
     </header>
 
-    <body>
+    <header class="usa-header">
       {{ if .LoggedInNation }}
       <h2>Your Nation</h2>
       {{ .LoggedInNation.FlagAndName }}
@@ -30,12 +29,16 @@
             name="verification_code" required="required" /></label><br>
         <button type="submit" class="usa-button">Login</button>
       </form>
+    </header>
+
+    <main>
+
       {{ end }}
 
       <h2>Maps</h2>
       <ul>
         {{ range .Maps }}
-        <li><a href="" class="usa-link">{{ . }}</a></li>
+        <li><a href="/maps/{{ . }}" class="usa-link">{{ . }}</a></li>
         {{ end }}
       </ul>
 
@@ -95,11 +98,10 @@
       {{ end }}
       {{ end }}
       {{ end }}
-    </body>
+    </main>
     <footer class="usa-footer">
       <a href="https://github.com/brickman1444/NSImperialism" class="usa-link--external">View on GitHub</a>
     </footer>
-  </main>
-</body>
+  </body>
 
 </html>

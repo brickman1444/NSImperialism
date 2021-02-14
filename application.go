@@ -256,6 +256,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+func mapsHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -274,6 +278,7 @@ func main() {
 	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	mux.HandleFunc("/favicon.ico", faviconHandler)
 	mux.HandleFunc("/login", loginHandler)
+	mux.HandleFunc("/maps", mapsHandler)
 
 	http.ListenAndServe(":5000", mux)
 }
