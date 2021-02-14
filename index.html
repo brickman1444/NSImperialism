@@ -24,18 +24,20 @@
       <h2>Login</h2>
       <form action="/login" method="PUT">
         <label>Nation Name<input class="usa-input" value="" id="nation_name" placeholder="maxtopia" type="text"
-          name="nation_name" required="required" /></label><br>
+            name="nation_name" required="required" /></label><br>
         <label>Verification Code copied from <a href="https://www.nationstates.net/page=verify_login">here</a>
-        <input class="usa-input" value="" id="verification_code" placeholder="abcd1234" type="password"
-          name="verification_code" required="required" /></label><br>
+          <input class="usa-input" value="" id="verification_code" placeholder="abcd1234" type="password"
+            name="verification_code" required="required" /></label><br>
         <button type="submit" class="usa-button">Login</button>
       </form>
       {{ end }}
 
       <h2>Maps</h2>
-      {{ range .Maps }}
-      <a href="" class="usa-link">{{ . }}</a>
-      {{ end }}
+      <ul>
+        {{ range .Maps }}
+        <li><a href="" class="usa-link">{{ . }}</a></li>
+        {{ end }}
+      </ul>
 
       <h2>Map</h2>
       <div>Year: {{ .Year }}</div>

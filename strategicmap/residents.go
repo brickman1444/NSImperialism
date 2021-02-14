@@ -7,6 +7,7 @@ type ResidentsInterface interface {
 	GetResident(territoryName string) (string, error)
 	HasResident(territoryName string) (bool, error)
 	CanExpand(nationID string) (bool, error)
+	GetAllMapIDs() ([]string, error)
 }
 
 type ResidentsSimpleMap struct {
@@ -33,6 +34,10 @@ func (simpleMap ResidentsSimpleMap) HasResident(territoryName string) (bool, err
 
 func (simpleMap ResidentsSimpleMap) CanExpand(nationID string) (bool, error) {
 	return true, nil
+}
+
+func (simpleMap ResidentsSimpleMap) GetAllMapIDs() ([]string, error) {
+	return []string{}, nil
 }
 
 var simpleMapInterfaceChecker ResidentsInterface = ResidentsSimpleMap{}
@@ -74,6 +79,10 @@ func (database ResidentsDatabase) HasResident(territoryName string) (bool, error
 
 func (database ResidentsDatabase) CanExpand(nationID string) (bool, error) {
 	return true, nil
+}
+
+func (database ResidentsDatabase) GetAllMapIDs() ([]string, error) {
+	return dynamodbwrapper.GetAllMapIDs()
 }
 
 var databaseInterfaceChecker ResidentsInterface = ResidentsDatabase{}

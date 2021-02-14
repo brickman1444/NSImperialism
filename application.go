@@ -92,7 +92,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, []string{"the-map"}}
+	mapIDs, err := globalResidentNations.GetAllMapIDs()
+	if err != nil {
+		http.Error(w, "Failed to get map IDs", http.StatusInternalServerError)
+		return
+	}
+
+	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, mapIDs}
 
 	indexTemplate.Execute(w, page)
 }

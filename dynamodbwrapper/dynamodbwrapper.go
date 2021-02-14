@@ -197,3 +197,28 @@ func PutMap(item DatabaseMap) error {
 	})
 	return err
 }
+
+func GetAllMapIDs() ([]string, error) {
+
+	log.Println("DynamoDB: Scan on all of map table")
+	scanOutput, err := dynamodbClient.Scan(databaseContext, &dynamodb.ScanInput{
+		TableName:      aws.String(mapTableName()),
+		ConsistentRead: aws.Bool(true),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	maps := []DatabaseMap{}
+	err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &maps)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := []string{}
+	for _, databaseMap := range maps {
+		ids = append(ids, databaseMap.ID)
+	}
+
+	return ids, nil
+}
