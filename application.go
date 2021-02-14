@@ -96,7 +96,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	mapIDs, err := globalResidentNations.GetAllMapIDs()
+	mapIDs, err := dynamodbwrapper.GetAllMapIDs()
 	if err != nil {
 		http.Error(w, "Failed to get map IDs", http.StatusInternalServerError)
 		return
