@@ -1,107 +1,66 @@
-<html lang="en">
+<main>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NSImperialism (Alpha)</title>
-  <link rel="stylesheet" href="/assets/uswds-2.10.0/css/usdws.css" />
-  <link rel="stylesheet" href="/assets/stylesheets/style.css?ver=2" />
-</head>
-
-<body class="usa-section--dark">
-  <header class="usa-header">
-    <h1><a href="/">NSImperialism (Alpha)</a></h1>
-    <p>The server may reset the state of the game at any time.</p>
-  </header>
-
-  <header class="usa-header">
-    {{ if .LoggedInNation }}
-    <h2>Your Nation</h2>
-    {{ .LoggedInNation.FlagAndName }}
-    <div>Defense Forces: Top {{.LoggedInNation.GetDefenseForces }}% in the world</div>
-    {{ else }}
-    <h2>Login</h2>
-    <form action="/login" method="PUT">
-      <label>Nation Name<input class="usa-input" value="" id="nation_name" placeholder="maxtopia" type="text"
-          name="nation_name" required="required" /></label><br>
-      <label>Verification Code copied from <a href="https://www.nationstates.net/page=verify_login">here</a>
-        <input class="usa-input" value="" id="verification_code" placeholder="abcd1234" type="password"
-          name="verification_code" required="required" /></label><br>
-      <button type="submit" class="usa-button">Login</button>
-    </form>
-  </header>
-
-  <main>
-
+  <h2>Maps</h2>
+  <ul>
+    {{ range .Maps }}
+    <li><a href="/maps/{{ . }}" class="usa-link">{{ . }}</a></li>
     {{ end }}
+  </ul>
 
-    <h2>Maps</h2>
-    <ul>
-      {{ range .Maps }}
-      <li><a href="/maps/{{ . }}" class="usa-link">{{ . }}</a></li>
-      {{ end }}
-    </ul>
+  <h2>Map</h2>
+  <div>Year: {{ .Year }}</div>
 
-    <h2>Map</h2>
-    <div>Year: {{ .Year }}</div>
+  <div class="map-container">
+    <img class="map-political" src="/assets/images/map_political.png">
+    <img class="map-geographic" src="/assets/images/map.jpg">
 
-    <div class="map-container">
-      <img class="map-political" src="/assets/images/map_political.png">
-      <img class="map-geographic" src="/assets/images/map.jpg">
-
-      {{ range .Map.Territories }}
-      <div class="floating-text" style="top: {{ .TopPercent }}%; left: {{ .LeftPercent }}%;">{{ .Text }}</div>
-      {{ end }}
-    </div>
-
-    <form action="/tick" method="POST">
-      <button type="submit" class="usa-button">Proceed To Next Year</button>
-    </form>
-    {{ if .LoggedInNation }}
-    <h2>Colonize</h2>
-    {{ if .CanColonize }}
-    <form action="/colonize" method="POST">
-      <label for="target">Target:</label>
-      <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
-        pattern="[A-R]"><br><br>
-      <button type="submit" class="usa-button">Claim</button>
-    </form>
-    {{ else }}
-    Your Economy must be larger to expand into more territory.
+    {{ range .Map.Territories }}
+    <div class="floating-text" style="top: {{ .TopPercent }}%; left: {{ .LeftPercent }}%;">{{ .Text }}</div>
     {{ end }}
-    <h2>Conquer</h2>
-    <form action="/war" method="POST">
-      <label for="target">Target:</label>
-      <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
-        pattern="[A-R]"><br><br>
-      <button type="submit" class="usa-button">Start War</button>
-    </form>
-    {{ end }}
-    {{ if .Wars }}
-    <h2>Ongoing Wars</h2>
-    {{ range .Wars }}
+  </div>
+
+  <form action="/tick" method="POST">
+    <button type="submit" class="usa-button">Proceed To Next Year</button>
+  </form>
+  {{ if .LoggedInNation }}
+  <h2>Colonize</h2>
+  {{ if .CanColonize }}
+  <form action="/colonize" method="POST">
+    <label for="target">Target:</label>
+    <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
+      pattern="[A-R]"><br><br>
+    <button type="submit" class="usa-button">Claim</button>
+  </form>
+  {{ else }}
+  Your Economy must be larger to expand into more territory.
+  {{ end }}
+  <h2>Conquer</h2>
+  <form action="/war" method="POST">
+    <label for="target">Target:</label>
+    <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
+      pattern="[A-R]"><br><br>
+    <button type="submit" class="usa-button">Start War</button>
+  </form>
+  {{ end }}
+  {{ if .Wars }}
+  <h2>Ongoing Wars</h2>
+  {{ range .Wars }}
+  {{ if .IsOngoing }}
+  <h3>{{ .Name }}</h3>
+  <dl>
+    <dt>Attacker</dt>
+    <dd>{{ .Attacker.FlagAndName }}</dd>
+    <dt>Defender</dt>
+    <dd>{{.Defender.FlagAndName }}</dd>
     {{ if .IsOngoing }}
-    <h3>{{ .Name }}</h3>
-    <dl>
-      <dt>Attacker</dt>
-      <dd>{{ .Attacker.FlagAndName }}</dd>
-      <dt>Defender</dt>
-      <dd>{{.Defender.FlagAndName }}</dd>
-      {{ if .IsOngoing }}
-      <dt>Warscore</dt>
-      <dd>{{ .ScoreDescription }}</dd>
-      {{ else }}
-      <dt>Winner</dt>
-      <dd>{{ .Advantage.FlagAndName }}</dd>
-      {{ end }}
-    </dl>
+    <dt>Warscore</dt>
+    <dd>{{ .ScoreDescription }}</dd>
+    {{ else }}
+    <dt>Winner</dt>
+    <dd>{{ .Advantage.FlagAndName }}</dd>
     {{ end }}
-    {{ end }}
-    {{ end }}
-  </main>
-  <footer class="usa-footer">
-    <a href="https://github.com/brickman1444/NSImperialism" class="usa-link--external">View on GitHub</a>
-  </footer>
-</body>
-
-</html>
+  </dl>
+  {{ end }}
+  {{ end }}
+  {{ end }}
+</main>

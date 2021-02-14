@@ -1,0 +1,33 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NSImperialism (Alpha)</title>
+    <link rel="stylesheet" href="/assets/uswds-2.10.0/css/usdws.css" />
+    <link rel="stylesheet" href="/assets/stylesheets/style.css?ver=2" />
+</head>
+
+<body class="usa-section--dark">
+    <header class="usa-header">
+        <h1><a href="/">NSImperialism (Alpha)</a></h1>
+        <p>The server may reset the state of the game at any time.</p>
+    </header>
+
+    <header class="usa-header">
+        {{ if .LoggedInNation }}
+        <h2>Your Nation</h2>
+        {{ .LoggedInNation.FlagAndName }}
+        <div>Defense Forces: Top {{.LoggedInNation.GetDefenseForces }}% in the world</div>
+        {{ else }}
+        <h2>Login</h2>
+        <form action="/login" method="PUT">
+            <label>Nation Name<input class="usa-input" value="" id="nation_name" placeholder="maxtopia" type="text"
+                    name="nation_name" required="required" /></label><br>
+            <label>Verification Code copied from <a href="https://www.nationstates.net/page=verify_login">here</a>
+                <input class="usa-input" value="" id="verification_code" placeholder="abcd1234" type="password"
+                    name="verification_code" required="required" /></label><br>
+            <button type="submit" class="usa-button">Login</button>
+        </form>
+        {{ end }}
+    </header>

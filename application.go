@@ -59,6 +59,8 @@ func getLoggedInNationFromCookie(r *http.Request) *nationstates_api.Nation {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	indexTemplate := template.Must(template.ParseFiles("index.html"))
+	headerTemplate := template.Must(template.ParseFiles("header.html"))
+	footerTemplate := template.Must(template.ParseFiles("footer.html"))
 
 	retrievedWars, err := globalWars.GetWars()
 	if err != nil {
@@ -100,7 +102,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, mapIDs}
 
+	headerTemplate.Execute(w, page)
+
 	indexTemplate.Execute(w, page)
+
+	footerTemplate.Execute(w, page)
 }
 
 type Page struct {
