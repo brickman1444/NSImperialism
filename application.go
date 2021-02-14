@@ -56,9 +56,8 @@ func getLoggedInNationFromCookie(r *http.Request) *nationstates_api.Nation {
 	return nation
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-
-	indexTemplate, err := template.ParseFiles("index.html")
+func renderPage(w http.ResponseWriter, bodyTemplateFileName string, data interface{}) {
+	bodyTemplate, err := template.ParseFiles(bodyTemplateFileName)
 	if err != nil {
 		http.Error(w, "Failed parse HTML body", http.StatusInternalServerError)
 		return
@@ -74,6 +73,27 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = headerTemplate.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Failed render HTML header", http.StatusInternalServerError)
+		return
+	}
+
+	err = bodyTemplate.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Failed render HTML body", http.StatusInternalServerError)
+		return
+	}
+
+	err = footerTemplate.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Failed render HTML footer", http.StatusInternalServerError)
+		return
+	}
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+
 	loggedInNation := getLoggedInNationFromCookie(r)
 
 	mapIDs, err := globalResidentNations.GetAllMapIDs()
@@ -84,23 +104,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, false, mapIDs}
 
-	err = headerTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, "Failed render HTML header", http.StatusInternalServerError)
-		return
-	}
-
-	err = indexTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, "Failed render HTML body", http.StatusInternalServerError)
-		return
-	}
-
-	err = footerTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, "Failed render HTML footer", http.StatusInternalServerError)
-		return
-	}
+	renderPage(w, "index.html", page)
 }
 
 type Page struct {
@@ -256,21 +260,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mapsHandler(w http.ResponseWriter, r *http.Request) {
-	mapTemplate, err := template.ParseFiles("map.html")
-	if err != nil {
-		http.Error(w, "Failed parse HTML body", http.StatusInternalServerError)
-		return
-	}
-	headerTemplate, err := template.ParseFiles("header.html")
-	if err != nil {
-		http.Error(w, "Failed parse HTML header", http.StatusInternalServerError)
-		return
-	}
-	footerTemplate, err := template.ParseFiles("footer.html")
-	if err != nil {
-		http.Error(w, "Failed parse HTML footer", http.StatusInternalServerError)
-		return
-	}
 
 	retrievedWars, err := globalWars.GetWars()
 	if err != nil {
@@ -306,23 +295,7 @@ func mapsHandler(w http.ResponseWriter, r *http.Request) {
 
 	page := &Page{retrievedWars, renderedMap, year, loggedInNation, canExpand, []string{}}
 
-	err = headerTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, "Failed render HTML header", http.StatusInternalServerError)
-		return
-	}
-
-	err = mapTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, "Failed render HTML body", http.StatusInternalServerError)
-		return
-	}
-
-	err = footerTemplate.Execute(w, page)
-	if err != nil {
-		http.Error(w, "Failed render HTML footer", http.StatusInternalServerError)
-		return
-	}
+	renderPage(w, "map.html", page)
 }
 
 func main() {
