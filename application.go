@@ -74,37 +74,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars, err := globalWars.GetWars()
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
-		return
-	}
-
-	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, retrievedWars)
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to render map", http.StatusInternalServerError)
-		return
-	}
-
 	loggedInNation := getLoggedInNationFromCookie(r)
-
-	year, err := globalYear.Get()
-	if err != nil {
-		http.Error(w, "Failed to get year", http.StatusInternalServerError)
-		return
-	}
-
-	canExpand := false
-
-	if loggedInNation != nil {
-		canExpand, err = globalResidentNations.CanExpand(loggedInNation.Id)
-		if err != nil {
-			http.Error(w, "Failed to get whether nation can expand", http.StatusInternalServerError)
-			return
-		}
-	}
 
 	mapIDs, err := globalResidentNations.GetAllMapIDs()
 	if err != nil {
@@ -112,7 +82,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, mapIDs}
+	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, false, mapIDs}
 
 	err = headerTemplate.Execute(w, page)
 	if err != nil {
@@ -134,7 +104,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Page struct {
-	Nation         *nationstates_api.Nation
 	Wars           []war.War
 	Map            strategicmap.RenderedMap
 	Year           int
@@ -335,13 +304,7 @@ func mapsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	mapIDs, err := globalResidentNations.GetAllMapIDs()
-	if err != nil {
-		http.Error(w, "Failed to get map IDs", http.StatusInternalServerError)
-		return
-	}
-
-	page := &Page{nil, retrievedWars, renderedMap, year, loggedInNation, canExpand, mapIDs}
+	page := &Page{retrievedWars, renderedMap, year, loggedInNation, canExpand, []string{}}
 
 	err = headerTemplate.Execute(w, page)
 	if err != nil {
