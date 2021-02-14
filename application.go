@@ -184,7 +184,7 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 
 func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarProviderInterface, year strategicmap.YearInterface) error {
 
-	err := year.Increment()
+	err := year.Increment("the-map")
 	if err != nil {
 		return err
 	}
@@ -242,6 +242,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func mapsHandler(w http.ResponseWriter, r *http.Request) {
 
+	routeVariables := mux.Vars(r)
+	mapID := routeVariables["id"]
+
 	retrievedWars, err := globalWars.GetWars()
 	if err != nil {
 		log.Println(err.Error())
@@ -258,7 +261,7 @@ func mapsHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	year, err := globalYear.Get()
+	year, err := globalYear.Get(mapID)
 	if err != nil {
 		http.Error(w, "Failed to get year", http.StatusInternalServerError)
 		return

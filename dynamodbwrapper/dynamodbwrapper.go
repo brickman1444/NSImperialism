@@ -14,6 +14,7 @@ import (
 )
 
 var CellDoesntExistError = errors.New("Cell doesn't exist")
+var MapDoesntExistError = errors.New("Map doesn't exist")
 
 var dynamodbClient *dynamodb.Client = nil
 var databaseContext = context.TODO()
@@ -151,15 +152,13 @@ type DatabaseMap struct {
 	Year int
 }
 
-const singleMapID = "the-map"
-
-func GetMap() (DatabaseMap, error) {
+func GetMap(ID string) (DatabaseMap, error) {
 	log.Println("DynamoDB: Get on map table")
 	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
 		TableName: aws.String(mapTableName()),
 		Key: map[string]types.AttributeValue{
 			"ID": &types.AttributeValueMemberS{
-				Value: singleMapID,
+				Value: ID,
 			},
 		},
 	})
@@ -169,7 +168,7 @@ func GetMap() (DatabaseMap, error) {
 	}
 
 	if len(getItemOutput.Item) == 0 {
-		return DatabaseMap{}, nil // Map entry doesn't exist. Start with default map
+		return DatabaseMap{}, MapDoesntExistError
 	}
 
 	gotItem := DatabaseMap{}
@@ -182,8 +181,6 @@ func GetMap() (DatabaseMap, error) {
 }
 
 func PutMap(item DatabaseMap) error {
-
-	item.ID = singleMapID
 
 	itemToPutMap, err := attributevalue.MarshalMap(item)
 	if err != nil {
