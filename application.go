@@ -103,7 +103,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, mapIDs}
+	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, mapIDs, ""}
 
 	renderPage(w, "index.html", page)
 }
@@ -114,6 +114,7 @@ type Page struct {
 	Year           int
 	LoggedInNation *nationstates_api.Nation
 	Maps           []string
+	MapID          string
 }
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
@@ -179,7 +180,10 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
 
-	databaseMap, err := globalMaps.GetMap("the-map")
+	routeVariables := mux.Vars(r)
+	mapID := routeVariables["id"]
+
+	databaseMap, err := globalMaps.GetMap(mapID)
 	if err != nil {
 		http.Error(w, "Failed to get map", http.StatusInternalServerError)
 		return
@@ -187,11 +191,17 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = tick(&databaseMap, &globalWars)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to tick map", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	err = globalMaps.PutMap(databaseMap)
+	if err != nil {
+		http.Error(w, "Failed to save map", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/maps/"+mapID, http.StatusSeeOther)
 }
 
 func tick(residentNations *databasemap.DatabaseMap, warsProvider war.WarProviderInterface) error {
@@ -276,7 +286,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []string{}}
+	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []string{}, databaseMap.ID}
 
 	renderPage(w, "map.html", page)
 }
@@ -325,7 +335,7 @@ func main() {
 	mux := mux.NewRouter()
 
 	mux.HandleFunc("/war", warHandler).Methods("POST")
-	mux.HandleFunc("/tick", tickHandler).Methods("POST")
+	mux.HandleFunc("/tick/{id}", tickHandler).Methods("POST")
 	mux.HandleFunc("/", indexHandler).Methods("GET")
 	mux.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))).Methods("GET")
 	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")

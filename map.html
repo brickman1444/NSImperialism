@@ -11,7 +11,7 @@
       {{ end }}
     </div>
   
-    <form action="/tick" method="POST">
+    <form action="/tick/{{ .MapID }}" method="POST">
       <button type="submit" class="usa-button">Proceed To Next Year</button>
     </form>
     {{ if .LoggedInNation }}
