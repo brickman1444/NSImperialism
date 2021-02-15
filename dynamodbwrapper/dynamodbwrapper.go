@@ -148,8 +148,15 @@ func mapTableName() string {
 }
 
 type DatabaseMap struct {
-	ID   string
-	Year int
+	ID    string
+	Year  int
+	Cells map[string]DatabaseCell
+}
+
+func NewDatabaseMap() DatabaseMap {
+	return DatabaseMap{
+		Cells: make(map[string]DatabaseCell),
+	}
 }
 
 func GetMap(ID string) (DatabaseMap, error) {
@@ -164,17 +171,17 @@ func GetMap(ID string) (DatabaseMap, error) {
 	})
 
 	if err != nil {
-		return DatabaseMap{}, err
+		return NewDatabaseMap(), err
 	}
 
 	if len(getItemOutput.Item) == 0 {
-		return DatabaseMap{}, MapDoesntExistError
+		return NewDatabaseMap(), MapDoesntExistError
 	}
 
-	gotItem := DatabaseMap{}
+	gotItem := NewDatabaseMap()
 	err = attributevalue.UnmarshalMap(getItemOutput.Item, &gotItem)
 	if err != nil {
-		return DatabaseMap{}, err
+		return NewDatabaseMap(), err
 	}
 
 	return gotItem, nil
