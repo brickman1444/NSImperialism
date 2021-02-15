@@ -25,7 +25,6 @@ import (
 var globalWars = war.WarProviderDatabase{}
 var globalMaps = strategicmap.MapsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
-var globalYear = strategicmap.YearDatabaseProvider{}
 var globalSessionManager = session.NewSessionManager()
 
 const SESSION_COOKIE_NAME = "SessionID"
@@ -186,7 +185,7 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tick(databaseMap, &globalWars, &globalYear)
+	err = tick(&databaseMap, &globalWars)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -195,12 +194,9 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func tick(residentNations databasemap.DatabaseMap, warsProvider war.WarProviderInterface, year strategicmap.YearInterface) error {
+func tick(residentNations *databasemap.DatabaseMap, warsProvider war.WarProviderInterface) error {
 
-	err := year.Increment("the-map")
-	if err != nil {
-		return err
-	}
+	residentNations.Year++
 
 	retrievedWars, err := warsProvider.GetWars()
 	if err != nil {
@@ -280,13 +276,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	year, err := globalYear.Get(mapID)
-	if err != nil {
-		http.Error(w, "Failed to get year", http.StatusInternalServerError)
-		return
-	}
-
-	page := &Page{retrievedWars, renderedMap, year, loggedInNation, []string{}}
+	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []string{}}
 
 	renderPage(w, "map.html", page)
 }

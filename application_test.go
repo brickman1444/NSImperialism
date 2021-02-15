@@ -8,7 +8,6 @@ import (
 
 	"github.com/brickman1444/NSImperialism/databasemap"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
-	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
 	"github.com/stretchr/testify/assert"
 )
@@ -53,11 +52,9 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		err = warProvider.PutWars([]war.War{theWar})
 		assert.NoError(t, err)
 
-		year := strategicmap.YearSimpleProvider{}
-
 		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
-			tick(residentNations, &warProvider, &year)
+			tick(&residentNations, &warProvider)
 
 			wars, err := warProvider.GetWars()
 			assert.NoError(t, err)
@@ -105,9 +102,7 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 	err := warProvider.PutWars([]war.War{war.NewWar(attacker, defender, "warForA", "A")})
 	assert.NoError(t, err)
 
-	year := strategicmap.YearSimpleProvider{}
-
-	tick(residentNations, &warProvider, &year)
+	tick(&residentNations, &warProvider)
 
 	retrievedWars, err := warProvider.GetWars()
 	assert.NoError(t, err)
