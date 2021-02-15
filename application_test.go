@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/brickman1444/NSImperialism/databasemap"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
@@ -44,11 +45,12 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 
 		theWar := war.NewWar(attacker, defender, "", "A")
 
-		residentNations := strategicmap.NewResidentsSimpleMap()
-		residentNations.SetResident("A", defender.Id)
+		residentNations := databasemap.NewDatabaseMapWithTerritories([]string{"A"})
+		err := residentNations.SetResident("A", defender.Id)
+		assert.NoError(t, err)
 
 		warProvider := war.NewWarProviderSimpleList()
-		err := warProvider.PutWars([]war.War{theWar})
+		err = warProvider.PutWars([]war.War{theWar})
 		assert.NoError(t, err)
 
 		year := strategicmap.YearSimpleProvider{}
@@ -96,7 +98,7 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 	attacker := &nationstates_api.Nation{Id: "Attacker"}
 	attacker.SetDefenseForces(0)
 
-	residentNations := strategicmap.NewResidentsSimpleMap()
+	residentNations := databasemap.NewDatabaseMapWithTerritories([]string{"A"})
 	residentNations.SetResident("A", defender.Id)
 
 	warProvider := war.NewWarProviderSimpleList()

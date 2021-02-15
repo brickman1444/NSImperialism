@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/brickman1444/NSImperialism/databasemap"
 )
 
 var CellDoesntExistError = errors.New("Cell doesn't exist")
@@ -37,16 +38,11 @@ func getTableName(enviromentVariable string, productionTableName string) string 
 	return productionTableName
 }
 
-type DatabaseCell struct {
-	ID       string
-	Resident string
-}
-
 func cellTableName() string {
 	return getTableName("CELL_TABLE_NAME", "nsimperialism-cell")
 }
 
-func PutCell(cell DatabaseCell) error {
+func PutCell(cell databasemap.DatabaseCell) error {
 
 	itemToPutMap, err := attributevalue.MarshalMap(cell)
 	if err != nil {
@@ -61,7 +57,7 @@ func PutCell(cell DatabaseCell) error {
 	return err
 }
 
-func GetCell(territoryName string) (DatabaseCell, error) {
+func GetCell(territoryName string) (databasemap.DatabaseCell, error) {
 
 	log.Println("DynamoDB: Get on cell table:", territoryName)
 	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
@@ -73,17 +69,17 @@ func GetCell(territoryName string) (DatabaseCell, error) {
 		},
 	})
 	if err != nil {
-		return DatabaseCell{}, err
+		return databasemap.DatabaseCell{}, err
 	}
 
 	if len(getItemOutput.Item) == 0 {
-		return DatabaseCell{}, CellDoesntExistError
+		return databasemap.DatabaseCell{}, CellDoesntExistError
 	}
 
-	gotItem := DatabaseCell{}
+	gotItem := databasemap.DatabaseCell{}
 	err = attributevalue.UnmarshalMap(getItemOutput.Item, &gotItem)
 	if err != nil {
-		return DatabaseCell{}, err
+		return databasemap.DatabaseCell{}, err
 	}
 
 	return gotItem, nil
@@ -147,19 +143,7 @@ func mapTableName() string {
 	return getTableName("MAP_TABLE_NAME", "nsimperialism-map")
 }
 
-type DatabaseMap struct {
-	ID    string
-	Year  int
-	Cells map[string]DatabaseCell
-}
-
-func NewDatabaseMap() DatabaseMap {
-	return DatabaseMap{
-		Cells: make(map[string]DatabaseCell),
-	}
-}
-
-func GetMap(ID string) (DatabaseMap, error) {
+func GetMap(ID string) (databasemap.DatabaseMap, error) {
 	log.Println("DynamoDB: Get on map table")
 	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
 		TableName: aws.String(mapTableName()),
@@ -171,23 +155,23 @@ func GetMap(ID string) (DatabaseMap, error) {
 	})
 
 	if err != nil {
-		return NewDatabaseMap(), err
+		return databasemap.NewBlankDatabaseMap(), err
 	}
 
 	if len(getItemOutput.Item) == 0 {
-		return NewDatabaseMap(), MapDoesntExistError
+		return databasemap.NewBlankDatabaseMap(), MapDoesntExistError
 	}
 
-	gotItem := NewDatabaseMap()
+	gotItem := databasemap.NewBlankDatabaseMap()
 	err = attributevalue.UnmarshalMap(getItemOutput.Item, &gotItem)
 	if err != nil {
-		return NewDatabaseMap(), err
+		return databasemap.NewBlankDatabaseMap(), err
 	}
 
 	return gotItem, nil
 }
 
-func PutMap(item DatabaseMap) error {
+func PutMap(item databasemap.DatabaseMap) error {
 
 	itemToPutMap, err := attributevalue.MarshalMap(item)
 	if err != nil {
@@ -213,7 +197,7 @@ func GetAllMapIDs() ([]string, error) {
 		return nil, err
 	}
 
-	maps := []DatabaseMap{}
+	maps := []databasemap.DatabaseMap{}
 	err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &maps)
 	if err != nil {
 		return nil, err

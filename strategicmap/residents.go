@@ -4,76 +4,29 @@ import (
 	"errors"
 	"math/rand"
 
-	"github.com/brickman1444/NSImperialism/dynamodbwrapper"
+	"github.com/brickman1444/NSImperialism/databasemap"
 )
 
-type ResidentsInterface interface {
-	SetResident(territoryName string, nationID string) error
-	GetResident(territoryName string) (string, error)
-	HasResident(territoryName string) (bool, error)
+type MapsInterface interface {
+	GetMap(mapID string) (databasemap.DatabaseMap, error)
+	PutMap(mapID string, databaseMap databasemap.DatabaseMap) error
 }
 
-type ResidentsSimpleMap struct {
-	residents map[string]string
+type MapsDatabase struct {
 }
 
-func NewResidentsSimpleMap() ResidentsSimpleMap {
-	return ResidentsSimpleMap{residents: make(map[string]string)}
+func (mapsDatabase MapsDatabase) GetMap(mapID string) (databasemap.DatabaseMap, error) {
+	return databasemap.DatabaseMap{}, nil
 }
 
-func (simpleMap ResidentsSimpleMap) SetResident(territoryName string, nationID string) error {
-	simpleMap.residents[territoryName] = nationID
+func (mapsDatabase MapsDatabase) PutMap(mapID string, databaseMap databasemap.DatabaseMap) error {
 	return nil
 }
 
-func (simpleMap ResidentsSimpleMap) GetResident(territoryName string) (string, error) {
-	return simpleMap.residents[territoryName], nil
-}
+var databaseInterfaceChecker MapsInterface = MapsDatabase{}
 
-func (simpleMap ResidentsSimpleMap) HasResident(territoryName string) (bool, error) {
-	_, doesExist := simpleMap.residents[territoryName]
-	return doesExist, nil
-}
-
-var simpleMapInterfaceChecker ResidentsInterface = ResidentsSimpleMap{}
-
-type ResidentsDatabase struct {
-}
-
-func (database ResidentsDatabase) SetResident(territoryName string, nationID string) error {
-	return dynamodbwrapper.PutCell(dynamodbwrapper.DatabaseCell{ID: territoryName, Resident: nationID})
-}
-
-func (database ResidentsDatabase) GetResident(territoryName string) (string, error) {
-
-	databaseCell, err := dynamodbwrapper.GetCell(territoryName)
-	if err == dynamodbwrapper.CellDoesntExistError {
-		return "", nil
-	}
-
-	if err != nil {
-		return "", err
-	}
-
-	return databaseCell.Resident, nil
-}
-
-func (database ResidentsDatabase) HasResident(territoryName string) (bool, error) {
-
-	_, err := dynamodbwrapper.GetCell(territoryName)
-	if err == dynamodbwrapper.CellDoesntExistError {
-		return false, nil
-	}
-
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
-func MakeNewRandomMap(mapLayout Map, participatingNations []string) (dynamodbwrapper.DatabaseMap, error) {
-	databaseMap := dynamodbwrapper.NewDatabaseMap()
+func MakeNewRandomMap(mapLayout Map, participatingNations []string) (databasemap.DatabaseMap, error) {
+	databaseMap := databasemap.NewBlankDatabaseMap()
 
 	if len(participatingNations) < 2 {
 		return databaseMap, errors.New("Creating a map requires at least two nations")
@@ -98,7 +51,7 @@ func MakeNewRandomMap(mapLayout Map, participatingNations []string) (dynamodbwra
 
 	for territoryIndex, _ := range mapLayout.Territories {
 		territoryID := mapLayout.Territories[territoryIndex].Name
-		databaseMap.Cells[territoryID] = dynamodbwrapper.DatabaseCell{
+		databaseMap.Cells[territoryID] = databasemap.DatabaseCell{
 			ID:       territoryID,
 			Resident: residentsForEachCell[territoryIndex],
 		}
@@ -106,5 +59,3 @@ func MakeNewRandomMap(mapLayout Map, participatingNations []string) (dynamodbwra
 
 	return databaseMap, nil
 }
-
-var databaseInterfaceChecker ResidentsInterface = ResidentsDatabase{}

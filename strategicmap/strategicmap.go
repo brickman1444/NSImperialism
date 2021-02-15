@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"math"
 
+	"github.com/brickman1444/NSImperialism/databasemap"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/war"
 )
@@ -65,7 +66,7 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
-func getTextForTerritory(territoryName string, residents ResidentsInterface, wars []war.War) (string, error) {
+func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap, wars []war.War) (string, error) {
 	residentNationID, err := residents.GetResident(territoryName)
 	if err != nil {
 		return "", err
@@ -88,7 +89,7 @@ func getTextForTerritory(territoryName string, residents ResidentsInterface, war
 	}
 }
 
-func Render(strategicMap Map, residents ResidentsInterface, wars []war.War) (RenderedMap, error) {
+func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []war.War) (RenderedMap, error) {
 	renderedMap := RenderedMap{}
 
 	for _, territory := range strategicMap.Territories {

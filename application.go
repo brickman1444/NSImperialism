@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brickman1444/NSImperialism/databasemap"
 	"github.com/brickman1444/NSImperialism/dynamodbwrapper"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/brickman1444/NSImperialism/session"
@@ -22,7 +23,7 @@ import (
 )
 
 var globalWars = war.WarProviderDatabase{}
-var globalResidentNations = strategicmap.ResidentsDatabase{}
+var globalMaps = strategicmap.MapsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalYear = strategicmap.YearDatabaseProvider{}
 var globalSessionManager = session.NewSessionManager()
@@ -126,7 +127,13 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	target := r.FormValue("target")
 
-	defenderID, err := globalResidentNations.GetResident(target)
+	databaseMap, err := globalMaps.GetMap("the-map")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get map"), http.StatusInternalServerError)
+		return
+	}
+
+	defenderID, err := databaseMap.GetResident(target)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get defender for %s", target), http.StatusInternalServerError)
 		return
@@ -173,7 +180,13 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := tick(globalResidentNations, &globalWars, &globalYear)
+	databaseMap, err := globalMaps.GetMap("the-map")
+	if err != nil {
+		http.Error(w, "Failed to get map", http.StatusInternalServerError)
+		return
+	}
+
+	err = tick(databaseMap, &globalWars, &globalYear)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -182,7 +195,7 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func tick(residentNations strategicmap.ResidentsInterface, warsProvider war.WarProviderInterface, year strategicmap.YearInterface) error {
+func tick(residentNations databasemap.DatabaseMap, warsProvider war.WarProviderInterface, year strategicmap.YearInterface) error {
 
 	err := year.Increment("the-map")
 	if err != nil {
@@ -240,7 +253,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func mapsHandler(w http.ResponseWriter, r *http.Request) {
+func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	routeVariables := mux.Vars(r)
 	mapID := routeVariables["id"]
@@ -252,7 +265,13 @@ func mapsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderedMap, err := strategicmap.Render(globalStrategicMap, globalResidentNations, retrievedWars)
+	databaseMap, err := globalMaps.GetMap(mapID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve map", http.StatusInternalServerError)
+		return
+	}
+
+	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, retrievedWars)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to render map", http.StatusInternalServerError)
@@ -270,6 +289,23 @@ func mapsHandler(w http.ResponseWriter, r *http.Request) {
 	page := &Page{retrievedWars, renderedMap, year, loggedInNation, []string{}}
 
 	renderPage(w, "map.html", page)
+}
+
+func postMapHandler(w http.ResponseWriter, r *http.Request) {
+	participatingNationNames := strings.Split(r.FormValue("participating_nations"), ";")
+	if len(participatingNationNames) == 0 {
+		http.Error(w, "List of participating nations was empty", http.StatusBadRequest)
+		return
+	}
+
+	for _, nationName := range participatingNationNames {
+		nation, err := nationstates_api.GetNationData(nationName)
+		if nation == nil || err != nil {
+			http.Error(w, "Could not find nation "+nationName, http.StatusBadRequest)
+			return
+		}
+	}
+
 }
 
 func main() {
@@ -291,7 +327,8 @@ func main() {
 	mux.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))).Methods("GET")
 	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")
 	mux.HandleFunc("/login", loginHandler).Methods("PUT")
-	mux.HandleFunc("/maps/{id}", mapsHandler).Methods("GET")
+	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
+	mux.HandleFunc("/maps", getMapHandler).Methods("POST")
 
 	http.ListenAndServe(":5000", mux)
 }
