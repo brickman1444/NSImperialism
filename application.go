@@ -306,6 +306,19 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	databaseMap, err := strategicmap.MakeNewRandomMap(globalStrategicMap, participatingNationNames)
+	if err != nil {
+		http.Error(w, "Failed to create map", http.StatusInternalServerError)
+		return
+	}
+
+	err = dynamodbwrapper.PutMap(databaseMap)
+	if err != nil {
+		http.Error(w, "Failed to save map", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/maps/"+databaseMap.ID, http.StatusSeeOther)
 }
 
 func main() {
@@ -328,7 +341,7 @@ func main() {
 	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")
 	mux.HandleFunc("/login", loginHandler).Methods("PUT")
 	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
-	mux.HandleFunc("/maps", getMapHandler).Methods("POST")
+	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
 
 	http.ListenAndServe(":5000", mux)
 }

@@ -84,3 +84,16 @@ func TestCreatingAMapMoreNationsThanCellsIsAnError(t *testing.T) {
 		assert.Error(t, err)
 	}
 }
+
+func TestRandomMapHasNonEmptyID(t *testing.T) {
+
+	staticMap := Map{Territories: []Territory{
+		{"A", 0, 0},
+		{"B", 0, 0},
+		{"C", 0, 0},
+	}}
+
+	databaseMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"})
+	assert.NoError(t, err)
+	assert.NotEmpty(t, databaseMap.ID)
+}

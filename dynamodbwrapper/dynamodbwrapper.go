@@ -38,53 +38,6 @@ func getTableName(enviromentVariable string, productionTableName string) string 
 	return productionTableName
 }
 
-func cellTableName() string {
-	return getTableName("CELL_TABLE_NAME", "nsimperialism-cell")
-}
-
-func PutCell(cell databasemap.DatabaseCell) error {
-
-	itemToPutMap, err := attributevalue.MarshalMap(cell)
-	if err != nil {
-		return err
-	}
-
-	log.Println("DynamoDB: Put on cell table:", cell.ID)
-	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
-		TableName: aws.String(cellTableName()),
-		Item:      itemToPutMap,
-	})
-	return err
-}
-
-func GetCell(territoryName string) (databasemap.DatabaseCell, error) {
-
-	log.Println("DynamoDB: Get on cell table:", territoryName)
-	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
-		TableName: aws.String(cellTableName()),
-		Key: map[string]types.AttributeValue{
-			"ID": &types.AttributeValueMemberS{
-				Value: territoryName,
-			},
-		},
-	})
-	if err != nil {
-		return databasemap.DatabaseCell{}, err
-	}
-
-	if len(getItemOutput.Item) == 0 {
-		return databasemap.DatabaseCell{}, CellDoesntExistError
-	}
-
-	gotItem := databasemap.DatabaseCell{}
-	err = attributevalue.UnmarshalMap(getItemOutput.Item, &gotItem)
-	if err != nil {
-		return databasemap.DatabaseCell{}, err
-	}
-
-	return gotItem, nil
-}
-
 type DatabaseWar struct {
 	Attacker      string
 	Defender      string
