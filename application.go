@@ -22,7 +22,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var globalWars = war.WarProviderDatabase{}
 var globalMaps = strategicmap.MapsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalSessionManager = session.NewSessionManager()
@@ -125,13 +124,16 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	target := r.FormValue("target")
+	routeVariables := mux.Vars(r)
+	mapID := routeVariables["id"]
 
-	databaseMap, err := globalMaps.GetMap("the-map")
+	databaseMap, err := globalMaps.GetMap(mapID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get map"), http.StatusInternalServerError)
 		return
 	}
+
+	target := r.FormValue("target")
 
 	defenderID, err := databaseMap.GetResident(target)
 	if err != nil {
@@ -149,7 +151,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars, err := globalWars.GetWars()
+	retrievedWars, err := war.GetWars(databaseMap)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
@@ -172,8 +174,10 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	if attacker != nil && len(warName) != 0 {
 		newWar := war.NewWar(attacker, defender, warName, target)
-		globalWars.PutWars([]war.War{newWar})
+		war.PutWars(&databaseMap, []war.War{newWar})
 	}
+
+	globalMaps.PutMap(databaseMap)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -189,7 +193,7 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tick(&databaseMap, &globalWars)
+	err = tick(&databaseMap)
 	if err != nil {
 		http.Error(w, "Failed to tick map", http.StatusInternalServerError)
 		return
@@ -204,11 +208,11 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/maps/"+mapID, http.StatusSeeOther)
 }
 
-func tick(residentNations *databasemap.DatabaseMap, warsProvider war.WarProviderInterface) error {
+func tick(residentNations *databasemap.DatabaseMap) error {
 
 	residentNations.Year++
 
-	retrievedWars, err := warsProvider.GetWars()
+	retrievedWars, err := war.GetWars(*residentNations)
 	if err != nil {
 		return err
 	}
@@ -220,7 +224,9 @@ func tick(residentNations *databasemap.DatabaseMap, warsProvider war.WarProvider
 		}
 	}
 
-	return warsProvider.PutWars(retrievedWars)
+	war.PutWars(residentNations, retrievedWars)
+
+	return nil
 }
 
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
@@ -264,16 +270,16 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 	routeVariables := mux.Vars(r)
 	mapID := routeVariables["id"]
 
-	retrievedWars, err := globalWars.GetWars()
-	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
-		return
-	}
-
 	databaseMap, err := globalMaps.GetMap(mapID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve map", http.StatusInternalServerError)
+		return
+	}
+
+	retrievedWars, err := war.GetWars(databaseMap)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
 		return
 	}
 

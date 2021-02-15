@@ -7,15 +7,26 @@ type DatabaseCell struct {
 	Resident string
 }
 
+type DatabaseWar struct {
+	Attacker      string
+	Defender      string
+	Score         int
+	ID            string
+	TerritoryName string
+	IsOngoing     bool
+}
+
 type DatabaseMap struct {
 	ID    string
 	Year  int
 	Cells map[string]DatabaseCell
+	Wars  map[string]DatabaseWar
 }
 
 func NewBlankDatabaseMap() DatabaseMap {
 	return DatabaseMap{
 		Cells: make(map[string]DatabaseCell),
+		Wars:  make(map[string]DatabaseWar),
 	}
 }
 
@@ -57,4 +68,22 @@ func (databaseMap DatabaseMap) HasResident(territoryName string) (bool, error) {
 	}
 
 	return len(resident) != 0, nil
+}
+
+func (databaseMap DatabaseMap) GetWars() []DatabaseWar {
+
+	warsToReturn := make([]DatabaseWar, 0, len(databaseMap.Wars))
+	for _, war := range databaseMap.Wars {
+		warsToReturn = append(warsToReturn, war)
+	}
+
+	return warsToReturn
+}
+
+func (databaseMap DatabaseMap) PutWars(warsToAdd []DatabaseWar) {
+
+	for _, warToAdd := range warsToAdd {
+
+		databaseMap.Wars[warToAdd.ID] = warToAdd
+	}
 }

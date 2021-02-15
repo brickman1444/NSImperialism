@@ -48,15 +48,13 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		err := residentNations.SetResident("A", defender.Id)
 		assert.NoError(t, err)
 
-		warProvider := war.NewWarProviderSimpleList()
-		err = warProvider.PutWars([]war.War{theWar})
-		assert.NoError(t, err)
+		war.PutWars(&residentNations, []war.War{theWar})
 
 		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
-			tick(&residentNations, &warProvider)
+			tick(&residentNations)
 
-			wars, err := warProvider.GetWars()
+			wars, err := war.GetWars(residentNations)
 			assert.NoError(t, err)
 			assert.Len(t, wars, 1)
 
@@ -65,7 +63,7 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 			}
 		}
 
-		wars, err := warProvider.GetWars()
+		wars, err := war.GetWars(residentNations)
 		assert.NoError(t, err)
 		assert.Len(t, wars, 1)
 
@@ -98,13 +96,11 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 	residentNations := databasemap.NewDatabaseMapWithTerritories([]string{"A"})
 	residentNations.SetResident("A", defender.Id)
 
-	warProvider := war.NewWarProviderSimpleList()
-	err := warProvider.PutWars([]war.War{war.NewWar(attacker, defender, "warForA", "A")})
-	assert.NoError(t, err)
+	war.PutWars(&residentNations, []war.War{war.NewWar(attacker, defender, "warForA", "A")})
 
-	tick(&residentNations, &warProvider)
+	tick(&residentNations)
 
-	retrievedWars, err := warProvider.GetWars()
+	retrievedWars, err := war.GetWars(residentNations)
 	assert.NoError(t, err)
 
 	assert.Len(t, retrievedWars, 1)

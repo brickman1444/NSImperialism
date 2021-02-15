@@ -14,7 +14,6 @@ import (
 	"github.com/brickman1444/NSImperialism/databasemap"
 )
 
-var CellDoesntExistError = errors.New("Cell doesn't exist")
 var MapDoesntExistError = errors.New("Map doesn't exist")
 
 var dynamodbClient *dynamodb.Client = nil
@@ -36,60 +35,6 @@ func getTableName(enviromentVariable string, productionTableName string) string 
 	}
 
 	return productionTableName
-}
-
-type DatabaseWar struct {
-	Attacker      string
-	Defender      string
-	Score         int
-	ID            string
-	TerritoryName string
-	IsOngoing     bool
-}
-
-func warTableName() string {
-	return getTableName("WAR_TABLE_NAME", "nsimperialism-war")
-}
-
-func PutWars(wars []DatabaseWar) error {
-
-	for _, warToAdd := range wars {
-		itemToPutMap, err := attributevalue.MarshalMap(warToAdd)
-		if err != nil {
-			return err
-		}
-
-		log.Println("DynamoDB: Put on war table:", warToAdd.ID)
-		_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
-			TableName: aws.String(warTableName()),
-			Item:      itemToPutMap,
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func GetWars() ([]DatabaseWar, error) {
-
-	log.Println("DynamoDB: Scan on all of war table")
-	scanOutput, err := dynamodbClient.Scan(databaseContext, &dynamodb.ScanInput{
-		TableName:      aws.String(warTableName()),
-		ConsistentRead: aws.Bool(true),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	warsToReturn := []DatabaseWar{}
-	err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &warsToReturn)
-	if err != nil {
-		return nil, err
-	}
-
-	return warsToReturn, nil
 }
 
 func mapTableName() string {
