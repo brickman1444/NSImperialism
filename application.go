@@ -286,7 +286,7 @@ func main() {
 	mux.HandleFunc("/war", warHandler).Methods("POST")
 	mux.HandleFunc("/tick", tickHandler).Methods("POST")
 	mux.HandleFunc("/", indexHandler).Methods("GET")
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets")))).Methods("GET")
+	mux.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))).Methods("GET")
 	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")
 	mux.HandleFunc("/login", loginHandler).Methods("PUT")
 	mux.HandleFunc("/maps/{id}", mapsHandler).Methods("GET")
