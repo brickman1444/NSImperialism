@@ -1,6 +1,11 @@
 package strategicmap
 
-import "github.com/brickman1444/NSImperialism/dynamodbwrapper"
+import (
+	"errors"
+	"math/rand"
+
+	"github.com/brickman1444/NSImperialism/dynamodbwrapper"
+)
 
 type ResidentsInterface interface {
 	SetResident(territoryName string, nationID string) error
@@ -65,6 +70,41 @@ func (database ResidentsDatabase) HasResident(territoryName string) (bool, error
 	}
 
 	return true, nil
+}
+
+func MakeNewRandomMap(mapLayout Map, participatingNations []string) (dynamodbwrapper.DatabaseMap, error) {
+	databaseMap := dynamodbwrapper.NewDatabaseMap()
+
+	if len(participatingNations) < 2 {
+		return databaseMap, errors.New("Creating a map requires at least two nations")
+	}
+
+	if len(participatingNations) > len(mapLayout.Territories) {
+		return databaseMap, errors.New("There must be space for each nation to get at least one territory")
+	}
+
+	residentsForEachCell := make([]string, len(participatingNations), len(mapLayout.Territories))
+	copy(residentsForEachCell, participatingNations) // this gives each nation one cell
+
+	for len(residentsForEachCell) < len(mapLayout.Territories) {
+
+		randomNationIndex := rand.Intn(len(participatingNations))
+		residentsForEachCell = append(residentsForEachCell, participatingNations[randomNationIndex])
+	}
+
+	rand.Shuffle(len(residentsForEachCell), func(i, j int) {
+		residentsForEachCell[i], residentsForEachCell[j] = residentsForEachCell[j], residentsForEachCell[i]
+	})
+
+	for territoryIndex, _ := range mapLayout.Territories {
+		territoryID := mapLayout.Territories[territoryIndex].Name
+		databaseMap.Cells[territoryID] = dynamodbwrapper.DatabaseCell{
+			ID:       territoryID,
+			Resident: residentsForEachCell[territoryIndex],
+		}
+	}
+
+	return databaseMap, nil
 }
 
 var databaseInterfaceChecker ResidentsInterface = ResidentsDatabase{}

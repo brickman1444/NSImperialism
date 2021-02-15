@@ -281,6 +281,8 @@ func main() {
 
 	dynamodbwrapper.Initialize()
 
+	rand.Seed(time.Now().UnixNano())
+
 	mux := mux.NewRouter()
 
 	mux.HandleFunc("/war", warHandler).Methods("POST")
