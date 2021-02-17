@@ -303,7 +303,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postMapHandler(w http.ResponseWriter, r *http.Request) {
-	participatingNationNames := strings.Split(r.FormValue("participating_nations"), ";")
+	participatingNationNames := strings.Split(r.FormValue("participating_nations"), ",")
 	if len(participatingNationNames) == 0 {
 		http.Error(w, "List of participating nations was empty", http.StatusBadRequest)
 		return
