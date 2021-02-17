@@ -36,11 +36,16 @@ func TestParseHTMLTemplates(t *testing.T) {
 func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 
 	for simulationCount := 0; simulationCount < 1000; simulationCount++ {
+
+		nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+
 		defender := &nationstates_api.Nation{Id: "Defender"}
 		defender.SetDefenseForces(100)
+		nationStatesProvider.PutNationData(*defender)
 
 		attacker := &nationstates_api.Nation{Id: "Attacker"}
 		attacker.SetDefenseForces(0)
+		nationStatesProvider.PutNationData(*attacker)
 
 		theWar := war.NewWar(attacker, defender, "", "A")
 
@@ -52,9 +57,9 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 
 		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
-			tick(&residentNations)
+			tick(&residentNations, nationStatesProvider)
 
-			wars, err := war.GetWars(residentNations)
+			wars, err := war.GetWars(residentNations, nationStatesProvider)
 			assert.NoError(t, err)
 			assert.Len(t, wars, 1)
 
@@ -63,7 +68,7 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 			}
 		}
 
-		wars, err := war.GetWars(residentNations)
+		wars, err := war.GetWars(residentNations, nationStatesProvider)
 		assert.NoError(t, err)
 		assert.Len(t, wars, 1)
 
@@ -87,20 +92,24 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 }
 
 func TestApplicationTickUpdatesWars(t *testing.T) {
+
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
 	defender := &nationstates_api.Nation{Id: "Defender"}
 	defender.SetDefenseForces(100)
+	nationStatesProvider.PutNationData(*defender)
 
 	attacker := &nationstates_api.Nation{Id: "Attacker"}
 	attacker.SetDefenseForces(0)
+	nationStatesProvider.PutNationData(*attacker)
 
 	residentNations := databasemap.NewDatabaseMapWithTerritories([]string{"A"})
 	residentNations.SetResident("A", defender.Id)
 
 	war.PutWars(&residentNations, []war.War{war.NewWar(attacker, defender, "warForA", "A")})
 
-	tick(&residentNations)
+	tick(&residentNations, nationStatesProvider)
 
-	retrievedWars, err := war.GetWars(residentNations)
+	retrievedWars, err := war.GetWars(residentNations, nationStatesProvider)
 	assert.NoError(t, err)
 
 	assert.Len(t, retrievedWars, 1)

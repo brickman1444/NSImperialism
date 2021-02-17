@@ -21,7 +21,7 @@
         <div>Defense Forces: Top {{.LoggedInNation.GetDefenseForces }}% in the world</div>
         {{ else }}
         <h2>Login</h2>
-        <form action="/login" method="PUT">
+        <form action="/login" method="POST">
             <label>Nation Name<input class="usa-input" value="" id="nation_name" placeholder="maxtopia" type="text"
                     name="nation_name" required="required" /></label><br>
             <label>Verification Code copied from <a href="https://www.nationstates.net/page=verify_login">here</a>

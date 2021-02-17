@@ -25,6 +25,7 @@ import (
 var globalMaps = strategicmap.MapsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
 var globalSessionManager = session.NewSessionManager()
+var globalNationStatesProvider = nationstates_api.NationStatesProviderAPI{}
 
 const SESSION_COOKIE_NAME = "SessionID"
 const SESSION_COOKIE_SEPARATOR = ":"
@@ -151,7 +152,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars, err := war.GetWars(databaseMap)
+	retrievedWars, err := war.GetWars(databaseMap, globalNationStatesProvider)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
@@ -177,9 +178,13 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		war.PutWars(&databaseMap, []war.War{newWar})
 	}
 
-	globalMaps.PutMap(databaseMap)
+	err = globalMaps.PutMap(databaseMap)
+	if err != nil {
+		http.Error(w, "Failed to save map", http.StatusInternalServerError)
+		return
+	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/maps/"+mapID, http.StatusSeeOther)
 }
 
 func tickHandler(w http.ResponseWriter, r *http.Request) {
@@ -193,7 +198,7 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tick(&databaseMap)
+	err = tick(&databaseMap, globalNationStatesProvider)
 	if err != nil {
 		http.Error(w, "Failed to tick map", http.StatusInternalServerError)
 		return
@@ -208,11 +213,11 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/maps/"+mapID, http.StatusSeeOther)
 }
 
-func tick(residentNations *databasemap.DatabaseMap) error {
+func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nationstates_api.NationStatesProvider) error {
 
 	residentNations.Year++
 
-	retrievedWars, err := war.GetWars(*residentNations)
+	retrievedWars, err := war.GetWars(*residentNations, nationStatesProvider)
 	if err != nil {
 		return err
 	}
@@ -276,7 +281,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars, err := war.GetWars(databaseMap)
+	retrievedWars, err := war.GetWars(databaseMap, globalNationStatesProvider)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
@@ -340,12 +345,12 @@ func main() {
 
 	mux := mux.NewRouter()
 
-	mux.HandleFunc("/war", warHandler).Methods("POST")
+	mux.HandleFunc("/war/{id}", warHandler).Methods("POST")
 	mux.HandleFunc("/tick/{id}", tickHandler).Methods("POST")
 	mux.HandleFunc("/", indexHandler).Methods("GET")
 	mux.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))).Methods("GET")
 	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")
-	mux.HandleFunc("/login", loginHandler).Methods("PUT")
+	mux.HandleFunc("/login", loginHandler).Methods("POST")
 	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
 	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
 

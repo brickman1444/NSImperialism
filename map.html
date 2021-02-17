@@ -16,7 +16,7 @@
     </form>
     {{ if .LoggedInNation }}
     <h2>Conquer</h2>
-    <form action="/war" method="POST">
+    <form action="/war/{{ .MapID }}" method="POST">
       <label for="target">Target:</label>
       <input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
         pattern="[A-R]"><br><br>

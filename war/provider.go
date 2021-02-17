@@ -7,14 +7,14 @@ import (
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
 
-func GetWars(databaseMap databasemap.DatabaseMap) ([]War, error) {
+func GetWars(databaseMap databasemap.DatabaseMap, nationStatesProvider nationstates_api.NationStatesProvider) ([]War, error) {
 
 	databaseWars := databaseMap.GetWars()
 
 	warsToReturn := make([]War, 0, len(databaseWars))
 	for _, databaseWar := range databaseWars {
 
-		attacker, err := nationstates_api.GetNationData(databaseWar.Attacker)
+		attacker, err := nationStatesProvider.GetNationData(databaseWar.Attacker)
 		if err != nil {
 			return nil, err
 		}
@@ -23,7 +23,7 @@ func GetWars(databaseMap databasemap.DatabaseMap) ([]War, error) {
 			return nil, errors.New("Null attacker")
 		}
 
-		defender, err := nationstates_api.GetNationData(databaseWar.Defender)
+		defender, err := nationStatesProvider.GetNationData(databaseWar.Defender)
 		if err != nil {
 			return nil, err
 		}
