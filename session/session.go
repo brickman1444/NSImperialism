@@ -39,3 +39,10 @@ func (manager *SessionManager) AddSession(nationName string, sessionIDString str
 
 	manager.sessions[nationName] = Session{sessionID: sessionIDString, expires: expires}
 }
+
+func (manager *SessionManager) RemoveSession(nationName string) {
+	manager.mutex.Lock()
+	defer manager.mutex.Unlock()
+
+	delete(manager.sessions, nationName)
+}

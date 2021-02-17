@@ -19,6 +19,9 @@
         <h2>Your Nation</h2>
         {{ .LoggedInNation.FlagAndName }}
         <div>Defense Forces: Top {{.LoggedInNation.GetDefenseForces }}% in the world</div>
+        <form action="/logout" method="POST">
+            <button type="submit" class="usa-button">Logout</button>
+        </form>
         {{ else }}
         <h2>Login</h2>
         <form action="/login" method="POST">

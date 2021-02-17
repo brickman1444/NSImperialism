@@ -261,11 +261,24 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookieValue := nationName + SESSION_COOKIE_SEPARATOR + sessionIDString
 	expire := time.Now().AddDate(0, 0, 1)
-	cookie := http.Cookie{Name: SESSION_COOKIE_NAME, Value: cookieValue, Expires: expire, HttpOnly: true}
+	cookie := http.Cookie{Name: SESSION_COOKIE_NAME, Value: cookieValue, HttpOnly: true}
 
 	globalSessionManager.AddSession(nationName, sessionIDString, expire)
 
 	http.SetCookie(w, &cookie)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+
+	loggedInNation := getLoggedInNationFromCookie(r)
+	if loggedInNation == nil {
+		http.Error(w, "You must be logged in to log out.", http.StatusBadRequest)
+		return
+	}
+
+	globalSessionManager.RemoveSession(loggedInNation.Id)
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
@@ -351,6 +364,7 @@ func main() {
 	mux.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))).Methods("GET")
 	mux.HandleFunc("/favicon.ico", faviconHandler).Methods("GET")
 	mux.HandleFunc("/login", loginHandler).Methods("POST")
+	mux.HandleFunc("/logout", logoutHandler).Methods("POST")
 	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
 	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
 
