@@ -15,6 +15,7 @@ import (
 )
 
 var MapDoesntExistError = errors.New("Map doesn't exist")
+var SessionDoesntExistError = errors.New("Session doesn't exist")
 
 var dynamodbClient *dynamodb.Client = nil
 var databaseContext = context.TODO()
@@ -107,4 +108,56 @@ func GetAllMapIDs() ([]string, error) {
 	}
 
 	return ids, nil
+}
+
+func sessionTableName() string {
+	return getTableName("SESSION_TABLE_NAME", "nsimperialism-session")
+}
+
+type DatabaseSession struct {
+	NationName           string
+	SessionID            string
+	ExpiresAtUnixSeconds int64
+}
+
+func GetSession(nationName string) (DatabaseSession, error) {
+	log.Println("DynamoDB: Get on session table")
+	getItemOutput, err := dynamodbClient.GetItem(databaseContext, &dynamodb.GetItemInput{
+		TableName: aws.String(sessionTableName()),
+		Key: map[string]types.AttributeValue{
+			"NationName": &types.AttributeValueMemberS{
+				Value: nationName,
+			},
+		},
+	})
+
+	if err != nil {
+		return DatabaseSession{}, err
+	}
+
+	if len(getItemOutput.Item) == 0 {
+		return DatabaseSession{}, SessionDoesntExistError
+	}
+
+	gotItem := DatabaseSession{}
+	err = attributevalue.UnmarshalMap(getItemOutput.Item, &gotItem)
+	if err != nil {
+		return DatabaseSession{}, err
+	}
+
+	return gotItem, nil
+}
+
+func PutSession(item DatabaseSession) error {
+	itemToPutMap, err := attributevalue.MarshalMap(item)
+	if err != nil {
+		return err
+	}
+
+	log.Println("DynamoDB: Put on session table")
+	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
+		TableName: aws.String(mapTableName()),
+		Item:      itemToPutMap,
+	})
+	return err
 }

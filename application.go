@@ -24,7 +24,7 @@ import (
 
 var globalMaps = strategicmap.MapsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
-var globalSessionManager = session.NewSessionManager()
+var globalSessionManager = session.NewSessionManagerSimpleMap()
 var globalNationStatesProvider = nationstates_api.NationStatesProviderAPI{}
 
 const SESSION_COOKIE_NAME = "SessionID"
@@ -44,7 +44,11 @@ func getLoggedInNationFromCookie(r *http.Request) *nationstates_api.Nation {
 	nationName := tokens[0]
 	sessionIDString := tokens[1]
 
-	isValid := globalSessionManager.IsValidSession(nationName, sessionIDString, time.Now())
+	isValid, err := globalSessionManager.IsValidSession(nationName, sessionIDString, time.Now())
+	if err != nil {
+		return nil
+	}
+
 	if !isValid {
 		return nil
 	}

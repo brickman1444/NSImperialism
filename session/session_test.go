@@ -9,56 +9,66 @@ import (
 
 func TestSessionManagerFindsValidSession(t *testing.T) {
 
-	manager := NewSessionManager()
+	manager := NewSessionManagerSimpleMap()
 
 	tenTen, _ := time.Parse(time.RFC3339, "2010-10-10T10:10:00Z")
 	manager.AddSession("nationA", "session1", tenTen)
 
 	ten, _ := time.Parse(time.RFC3339, "2010-10-10T10:00:00Z")
-	assert.True(t, manager.IsValidSession("nationA", "session1", ten))
+	isValid, err := manager.IsValidSession("nationA", "session1", ten)
+	assert.True(t, isValid)
+	assert.NoError(t, err)
 }
 
 func TestExpiredSessionIsntValid(t *testing.T) {
 
-	manager := NewSessionManager()
+	manager := NewSessionManagerSimpleMap()
 
 	ten, _ := time.Parse(time.RFC3339, "2010-10-10T10:00:00Z")
 	manager.AddSession("nationA", "session1", ten)
 
 	tenTen, _ := time.Parse(time.RFC3339, "2010-10-10T10:10:00Z")
-	assert.False(t, manager.IsValidSession("nationA", "session1", tenTen))
+	isValid, err := manager.IsValidSession("nationA", "session1", tenTen)
+	assert.False(t, isValid)
+	assert.NoError(t, err)
 }
 
 func TestWrongSessionIDIsntValid(t *testing.T) {
 
-	manager := NewSessionManager()
+	manager := NewSessionManagerSimpleMap()
 
 	tenTen, _ := time.Parse(time.RFC3339, "2010-10-10T10:10:00Z")
 	manager.AddSession("nationA", "session1", tenTen)
 
 	ten, _ := time.Parse(time.RFC3339, "2010-10-10T10:00:00Z")
-	assert.False(t, manager.IsValidSession("nationA", "session2", ten))
+	isValid, err := manager.IsValidSession("nationA", "session2", ten)
+	assert.False(t, isValid)
+	assert.NoError(t, err)
 }
 
 func TestWrongNationIDIsntValid(t *testing.T) {
 
-	manager := NewSessionManager()
+	manager := NewSessionManagerSimpleMap()
 
 	tenTen, _ := time.Parse(time.RFC3339, "2010-10-10T10:10:00Z")
 	manager.AddSession("nationA", "session1", tenTen)
 
 	ten, _ := time.Parse(time.RFC3339, "2010-10-10T10:00:00Z")
-	assert.False(t, manager.IsValidSession("nationB", "session1", ten))
+	isValid, err := manager.IsValidSession("nationB", "session1", ten)
+	assert.False(t, isValid)
+	assert.NoError(t, err)
 }
 
 func TestSessionManagerRemovedSessionIsntValid(t *testing.T) {
 
-	manager := NewSessionManager()
+	manager := NewSessionManagerSimpleMap()
 
 	tenTen, _ := time.Parse(time.RFC3339, "2010-10-10T10:10:00Z")
 	manager.AddSession("nationA", "session1", tenTen)
 	manager.RemoveSession("nationA")
 
 	ten, _ := time.Parse(time.RFC3339, "2010-10-10T10:00:00Z")
-	assert.False(t, manager.IsValidSession("nationA", "session1", ten))
+	isValid, err := manager.IsValidSession("nationA", "session1", ten)
+	assert.False(t, isValid)
+	assert.NoError(t, err)
 }
