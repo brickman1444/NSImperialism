@@ -24,7 +24,7 @@ import (
 
 var globalMaps = strategicmap.MapsDatabase{}
 var globalStrategicMap = strategicmap.StaticMap
-var globalSessionManager = session.NewSessionManagerSimpleMap()
+var globalSessionManager = session.SessionManagerDatabase{}
 var globalNationStatesProvider = nationstates_api.NationStatesProviderAPI{}
 
 const SESSION_COOKIE_NAME = "SessionID"
