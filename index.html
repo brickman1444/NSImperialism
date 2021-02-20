@@ -5,10 +5,12 @@
     <li><a href="/maps/{{ . }}" class="usa-link">{{ . }}</a></li>
     {{ end }}
   </ul>
+  {{ if .LoggedInNation }}
   <h2>Create a New Map</h2>
   <form action="/maps" method="POST">
     <label>Participating Nations, separated by commas<input class="usa-input" value="" id="participating_nations" placeholder="maxtopia,lilliput" type="text"
             name="participating_nations" required="required" /></label><br>
     <button type="submit" class="usa-button">Submit</button>
 </form>
+{{ end }}
 </main>
