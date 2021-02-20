@@ -3,6 +3,8 @@ package session
 import (
 	"sync"
 	"time"
+
+	"github.com/brickman1444/NSImperialism/dynamodbwrapper"
 )
 
 type Session struct {
@@ -60,3 +62,36 @@ func (manager *SessionManagerSimpleMap) RemoveSession(nationName string) error {
 }
 
 var simpleMapInterfaceChecker SessionManager = &SessionManagerSimpleMap{}
+
+type SessionManagerDatabase struct {
+}
+
+func (manager *SessionManagerDatabase) IsValidSession(nationName string, sessionIDString string, now time.Time) (bool, error) {
+
+	session, err := dynamodbwrapper.GetSession(nationName)
+	if err != nil {
+		return false, err
+	}
+
+	expirationDate := time.Unix(session.ExpiresAtUnixSeconds, 0)
+
+	return session.SessionID == sessionIDString && expirationDate.After(now), nil
+}
+
+func (manager *SessionManagerDatabase) AddSession(nationName string, sessionIDString string, expires time.Time) error {
+
+	databaseSession := dynamodbwrapper.DatabaseSession{
+		NationName:           nationName,
+		SessionID:            sessionIDString,
+		ExpiresAtUnixSeconds: expires.Unix(),
+	}
+
+	return dynamodbwrapper.PutSession(databaseSession)
+}
+
+func (manager *SessionManagerDatabase) RemoveSession(nationName string) error {
+
+	return dynamodbwrapper.DeleteSession(nationName)
+}
+
+var databaseInterfaceChecker SessionManager = &SessionManagerDatabase{}

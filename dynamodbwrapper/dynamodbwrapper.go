@@ -156,8 +156,21 @@ func PutSession(item DatabaseSession) error {
 
 	log.Println("DynamoDB: Put on session table")
 	_, err = dynamodbClient.PutItem(databaseContext, &dynamodb.PutItemInput{
-		TableName: aws.String(mapTableName()),
+		TableName: aws.String(sessionTableName()),
 		Item:      itemToPutMap,
 	})
+	return err
+}
+
+func DeleteSession(nationName string) error {
+	_, err := dynamodbClient.DeleteItem(databaseContext, &dynamodb.DeleteItemInput{
+		TableName: aws.String(sessionTableName()),
+		Key: map[string]types.AttributeValue{
+			"NationName": &types.AttributeValueMemberS{
+				Value: nationName,
+			},
+		},
+	})
+
 	return err
 }
