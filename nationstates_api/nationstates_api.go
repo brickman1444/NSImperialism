@@ -15,6 +15,7 @@ import (
 )
 
 const CENSUSSCALEDEFENSEFORCES int = 46
+const CENSUSSCALESCIENTIFICADVANCEMENT int = 70
 
 var rateLimitDuration, _ = time.ParseDuration("30s")
 var limiter = NewRateLimiter(40, rateLimitDuration) // API Docs say 50 requests in 30 seconds so I'm being a little conservative so we don't get locked out https://www.nationstates.net/pages/api.html#ratelimits
@@ -34,23 +35,31 @@ type Nation struct {
 	CensusScales []CensusScale `xml:"CENSUS>SCALE"`
 }
 
-func (nation *Nation) GetDefenseForces() int {
+func (nation *Nation) GetCensusRank(scale int) int {
 	for _, censusScale := range nation.CensusScales {
-		if censusScale.Id == CENSUSSCALEDEFENSEFORCES {
+		if censusScale.Id == scale {
 			return censusScale.PercentageRank
 		}
 	}
 	return 0
 }
 
-func (nation *Nation) SetDefenseForces(percentageRank int) {
+func (nation *Nation) SetCensusRank(percentageRank int, scale int) {
 	for censusIndex, censusScale := range nation.CensusScales {
-		if censusScale.Id == CENSUSSCALEDEFENSEFORCES {
+		if censusScale.Id == scale {
 			nation.CensusScales[censusIndex].PercentageRank = percentageRank
 			return
 		}
 	}
-	nation.CensusScales = append(nation.CensusScales, CensusScale{CENSUSSCALEDEFENSEFORCES, percentageRank})
+	nation.CensusScales = append(nation.CensusScales, CensusScale{scale, percentageRank})
+}
+
+func (nation *Nation) GetDefenseForces() int {
+	return nation.GetCensusRank(CENSUSSCALEDEFENSEFORCES)
+}
+
+func (nation *Nation) SetDefenseForces(percentageRank int) {
+	nation.SetCensusRank(percentageRank, CENSUSSCALEDEFENSEFORCES)
 }
 
 func (nation *Nation) GetURL() string {
