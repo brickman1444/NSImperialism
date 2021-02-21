@@ -101,15 +101,20 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	mapIDs, err := dynamodbwrapper.GetAllMapIDs()
+	maps, err := dynamodbwrapper.GetAllMaps()
 	if err != nil {
 		http.Error(w, "Failed to get map IDs", http.StatusInternalServerError)
 		return
 	}
 
-	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, mapIDs, ""}
+	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, maps, ""}
 
 	renderPage(w, "index.html", page)
+}
+
+type MapLinkData struct {
+	MapID                string
+	ParticipatingNations []nationstates_api.Nation
 }
 
 type Page struct {
@@ -117,7 +122,7 @@ type Page struct {
 	Map            strategicmap.RenderedMap
 	Year           int
 	LoggedInNation *nationstates_api.Nation
-	Maps           []string
+	Maps           []databasemap.DatabaseMap
 	MapID          string
 }
 
@@ -320,7 +325,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []string{}, databaseMap.ID}
+	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []databasemap.DatabaseMap{}, databaseMap.ID}
 
 	renderPage(w, "map.html", page)
 }

@@ -85,7 +85,7 @@ func PutMap(item databasemap.DatabaseMap) error {
 	return err
 }
 
-func GetAllMapIDs() ([]string, error) {
+func GetAllMaps() ([]databasemap.DatabaseMap, error) {
 
 	log.Println("DynamoDB: Scan on all of map table")
 	scanOutput, err := dynamodbClient.Scan(databaseContext, &dynamodb.ScanInput{
@@ -102,12 +102,7 @@ func GetAllMapIDs() ([]string, error) {
 		return nil, err
 	}
 
-	ids := []string{}
-	for _, databaseMap := range maps {
-		ids = append(ids, databaseMap.ID)
-	}
-
-	return ids, nil
+	return maps, nil
 }
 
 func sessionTableName() string {
