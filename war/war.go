@@ -21,10 +21,6 @@ func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation
 	return War{attacker, defender, 0, name, territoryName, true}
 }
 
-func (war *War) ScoreChangePerYear() int {
-	return (100 - war.Attacker.GetDefenseForces()) - (100 - war.Defender.GetDefenseForces())
-}
-
 func (war *War) Advantage() *nationstates_api.Nation {
 	return Advantage(war.Attacker, war.Defender, war.Score)
 }
@@ -58,18 +54,6 @@ func (war *War) ScoreDescription() template.HTML {
 
 	absoluteScore := Abs(war.Score)
 	return template.HTML(fmt.Sprintf("Currently %d%%%s", absoluteScore, advantageDescription))
-}
-
-func (war *War) ScorePerYearDescription() template.HTML {
-
-	advantage := Advantage(war.Attacker, war.Defender, war.ScoreChangePerYear())
-	advantageDescription := ""
-	if advantage != nil {
-		advantageDescription = fmt.Sprintf(" in favor of %s", string(advantage.FlagAndName()))
-	}
-
-	absoluteScore := Abs(war.ScoreChangePerYear())
-	return template.HTML(fmt.Sprintf("+%d%%%s per year", absoluteScore, advantageDescription))
 }
 
 func FindOngoingWarAt(wars []War, territoryName string) *War {

@@ -8,19 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWarScoreChangePerYear(t *testing.T) {
-
-	defender := &nationstates_api.Nation{}
-	defender.SetDefenseForces(50)
-
-	attacker := &nationstates_api.Nation{}
-	attacker.SetDefenseForces(0)
-
-	war := NewWar(attacker, defender, "", "")
-
-	assert.Equal(t, 50, war.ScoreChangePerYear())
-}
-
 func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
 	defender := &nationstates_api.Nation{}
 	attacker := &nationstates_api.Nation{}
