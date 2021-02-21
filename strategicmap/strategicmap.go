@@ -66,7 +66,7 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
-func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap, wars []war.War) (string, error) {
+func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap, wars []war.War, nationStatesProvider nationstates_api.NationStatesProvider) (string, error) {
 	residentNationID, err := residents.GetResident(territoryName)
 	if err != nil {
 		return "", err
@@ -76,25 +76,30 @@ func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap
 		return territoryName + " ❓", nil
 	}
 
-	residentNation, err := nationstates_api.GetNationData(residentNationID)
+	residentNation, err := nationStatesProvider.GetNationData(residentNationID)
 	if err != nil {
 		return "", err
 	}
 
 	war := war.FindOngoingWarAt(wars, territoryName)
-	if war != nil {
-		return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", war.Attacker.FlagThumbnail()), nil
-	} else {
+	if war == nil {
 		return territoryName + " " + string(residentNation.FlagThumbnail()), nil
 	}
+
+	attacker, err := war.AttackerNation(nationStatesProvider)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", attacker.FlagThumbnail()), nil
 }
 
-func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []war.War) (RenderedMap, error) {
+func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []war.War, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
 	renderedMap := RenderedMap{}
 
 	for _, territory := range strategicMap.Territories {
 
-		text, err := getTextForTerritory(territory.Name, residents, wars)
+		text, err := getTextForTerritory(territory.Name, residents, wars, nationStatesProvider)
 		if err != nil {
 			return RenderedMap{}, err
 		}

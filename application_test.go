@@ -75,7 +75,10 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		finishedWar := wars[0]
 		assert.False(t, finishedWar.IsOngoing)
 
-		if finishedWar.Advantage().Id == attacker.Id {
+		advantage, err := finishedWar.Advantage(nationStatesProvider)
+		assert.NoError(t, err)
+
+		if advantage.Id == attacker.Id {
 			newResidentID, err := residentNations.GetResident("A")
 
 			assert.NoError(t, err)

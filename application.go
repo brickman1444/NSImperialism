@@ -277,7 +277,13 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 	for warIndex := range retrievedWars {
 		didFinish := retrievedWars[warIndex].Tick()
 		if didFinish {
-			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, retrievedWars[warIndex].Advantage().Id)
+
+			advantage, err := retrievedWars[warIndex].Advantage(nationStatesProvider)
+			if err != nil {
+				return err
+			}
+
+			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, advantage.Id)
 		}
 	}
 
@@ -353,7 +359,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, retrievedWars)
+	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, retrievedWars, globalNationStatesProvider)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "Failed to render map", http.StatusInternalServerError)

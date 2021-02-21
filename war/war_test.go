@@ -9,32 +9,53 @@ import (
 )
 
 func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
+	defender := nationstates_api.Nation{Id: "defender"}
+	attacker := nationstates_api.Nation{Id: "attacker"}
 
-	war := NewWar(attacker, defender, "", "")
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+	nationStatesProvider.PutNationData(defender)
+	nationStatesProvider.PutNationData(attacker)
 
-	assert.Nil(t, war.Advantage())
+	war := NewWar(&attacker, &defender, "", "")
+
+	advantage, err := war.Advantage(nationStatesProvider)
+	assert.NoError(t, err)
+
+	assert.Nil(t, advantage)
 }
 
 func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
+	defender := nationstates_api.Nation{Id: "defender"}
+	attacker := nationstates_api.Nation{Id: "attacker"}
 
-	war := NewWar(attacker, defender, "", "")
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+	nationStatesProvider.PutNationData(defender)
+	nationStatesProvider.PutNationData(attacker)
+
+	war := NewWar(&attacker, &defender, "", "")
 	war.Score = 1
 
-	assert.Same(t, attacker, war.Advantage())
+	advantage, err := war.Advantage(nationStatesProvider)
+	assert.NoError(t, err)
+
+	assert.Equal(t, attacker.Id, advantage.Id)
 }
 
 func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
+	defender := nationstates_api.Nation{Id: "defender"}
+	attacker := nationstates_api.Nation{Id: "attacker"}
 
-	war := NewWar(attacker, defender, "", "")
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+	nationStatesProvider.PutNationData(defender)
+	nationStatesProvider.PutNationData(attacker)
+
+	war := NewWar(&attacker, &defender, "", "")
 	war.Score = -1
 
-	assert.Same(t, defender, war.Advantage())
+	advantage, err := war.Advantage(nationStatesProvider)
+	assert.NoError(t, err)
+
+	assert.Equal(t, defender.Id, advantage.Id)
 }
 
 func TestNoOneHasAdvantageWhenScoreIsZero(t *testing.T) {
@@ -142,11 +163,15 @@ func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
 
 func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+
 	defender := &nationstates_api.Nation{Id: "Defender"}
 	defender.SetDefenseForces(60)
+	nationStatesProvider.PutNationData(*defender)
 
 	attacker := &nationstates_api.Nation{Id: "Attacker"}
 	attacker.SetDefenseForces(40)
+	nationStatesProvider.PutNationData(*attacker)
 
 	attackerWinCount := 0
 	defenderWinCount := 0
@@ -165,7 +190,8 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 			length++
 		}
 
-		winner := war.Advantage()
+		winner, err := war.Advantage(nationStatesProvider)
+		assert.NoError(t, err)
 		if winner != nil && winner.Id == attacker.Id {
 			attackerWinCount++
 		} else {

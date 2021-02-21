@@ -1,6 +1,7 @@
 package war
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"math/rand"
@@ -17,12 +18,39 @@ type War struct {
 	IsOngoing     bool
 }
 
+func (war War) AttackerNation(nationStatesProvider nationstates_api.NationStatesProvider) (nationstates_api.Nation, error) {
+	if war.Attacker == nil {
+		return nationstates_api.Nation{}, errors.New("nil nation")
+	} else {
+		return *war.Attacker, nil
+	}
+}
+
+func (war War) DefenderNation(nationStatesProvider nationstates_api.NationStatesProvider) (nationstates_api.Nation, error) {
+	if war.Defender == nil {
+		return nationstates_api.Nation{}, errors.New("nil nation")
+	} else {
+		return *war.Defender, nil
+	}
+}
+
 func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, territoryName string) War {
 	return War{attacker, defender, 0, name, territoryName, true}
 }
 
-func (war *War) Advantage() *nationstates_api.Nation {
-	return Advantage(war.Attacker, war.Defender, war.Score)
+func (war *War) Advantage(nationStatesProvider nationstates_api.NationStatesProvider) (*nationstates_api.Nation, error) {
+
+	attacker, err := war.AttackerNation(nationStatesProvider)
+	if err != nil {
+		return nil, err
+	}
+
+	defender, err := war.DefenderNation(nationStatesProvider)
+	if err != nil {
+		return nil, err
+	}
+
+	return Advantage(&attacker, &defender, war.Score), nil
 }
 
 func Advantage(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, score int) *nationstates_api.Nation {
@@ -44,16 +72,20 @@ func Abs(i int) int {
 	return i
 }
 
-func (war *War) ScoreDescription() template.HTML {
+func (war *War) ScoreDescription(nationStatesProvider nationstates_api.NationStatesProvider) (template.HTML, error) {
 
-	advantage := war.Advantage()
+	advantage, err := war.Advantage(nationStatesProvider)
+	if err != nil {
+		return "", err
+	}
+
 	advantageDescription := ""
 	if advantage != nil {
 		advantageDescription = fmt.Sprintf(" in favor of %s", string(advantage.FlagAndName()))
 	}
 
 	absoluteScore := Abs(war.Score)
-	return template.HTML(fmt.Sprintf("Currently %d%%%s", absoluteScore, advantageDescription))
+	return template.HTML(fmt.Sprintf("Currently %d%%%s", absoluteScore, advantageDescription)), nil
 }
 
 func FindOngoingWarAt(wars []War, territoryName string) *War {
