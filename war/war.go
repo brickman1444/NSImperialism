@@ -38,7 +38,7 @@ func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation
 	return War{attacker, defender, 0, name, territoryName, true}
 }
 
-func (war *War) Advantage(nationStatesProvider nationstates_api.NationStatesProvider) (*nationstates_api.Nation, error) {
+func (war *War) Advantage(nationStatesProvider nationstates_api.NationStatesProvider) (*string, error) {
 
 	attacker, err := war.AttackerNation(nationStatesProvider)
 	if err != nil {
@@ -50,16 +50,16 @@ func (war *War) Advantage(nationStatesProvider nationstates_api.NationStatesProv
 		return nil, err
 	}
 
-	return Advantage(&attacker, &defender, war.Score), nil
+	return Advantage(attacker.Id, defender.Id, war.Score), nil
 }
 
-func Advantage(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, score int) *nationstates_api.Nation {
+func Advantage(attackerID string, defenderID string, score int) *string {
 	if score > 0 {
-		return attacker
+		return &attackerID
 	}
 
 	if score < 0 {
-		return defender
+		return &defenderID
 	}
 
 	return nil
@@ -74,14 +74,20 @@ func Abs(i int) int {
 
 func (war *War) ScoreDescription(nationStatesProvider nationstates_api.NationStatesProvider) (template.HTML, error) {
 
-	advantage, err := war.Advantage(nationStatesProvider)
+	advantageID, err := war.Advantage(nationStatesProvider)
 	if err != nil {
 		return "", err
 	}
 
 	advantageDescription := ""
-	if advantage != nil {
-		advantageDescription = fmt.Sprintf(" in favor of %s", string(advantage.FlagAndName()))
+	if advantageID != nil {
+
+		advantageNation, err := nationStatesProvider.GetNationData(*advantageID)
+		if err != nil {
+			return "", err
+		}
+
+		advantageDescription = fmt.Sprintf(" in favor of %s", string(advantageNation.FlagAndName()))
 	}
 
 	absoluteScore := Abs(war.Score)

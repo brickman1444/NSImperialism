@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -278,12 +279,16 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 		didFinish := retrievedWars[warIndex].Tick()
 		if didFinish {
 
-			advantage, err := retrievedWars[warIndex].Advantage(nationStatesProvider)
+			advantageID, err := retrievedWars[warIndex].Advantage(nationStatesProvider)
 			if err != nil {
 				return err
 			}
 
-			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, advantage.Id)
+			if advantageID == nil {
+				return errors.New("Nil war winner ID")
+			}
+
+			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, *advantageID)
 		}
 	}
 

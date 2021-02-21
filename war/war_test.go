@@ -35,10 +35,11 @@ func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
 	war := NewWar(&attacker, &defender, "", "")
 	war.Score = 1
 
-	advantage, err := war.Advantage(nationStatesProvider)
+	advantageID, err := war.Advantage(nationStatesProvider)
 	assert.NoError(t, err)
+	assert.NotNil(t, advantageID)
 
-	assert.Equal(t, attacker.Id, advantage.Id)
+	assert.Equal(t, attacker.Id, *advantageID)
 }
 
 func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
@@ -52,31 +53,23 @@ func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
 	war := NewWar(&attacker, &defender, "", "")
 	war.Score = -1
 
-	advantage, err := war.Advantage(nationStatesProvider)
+	advantageID, err := war.Advantage(nationStatesProvider)
 	assert.NoError(t, err)
+	assert.NotNil(t, advantageID)
 
-	assert.Equal(t, defender.Id, advantage.Id)
+	assert.Equal(t, defender.Id, *advantageID)
 }
 
 func TestNoOneHasAdvantageWhenScoreIsZero(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
-
-	assert.Nil(t, Advantage(attacker, defender, 0))
+	assert.Nil(t, Advantage("attacker", "defender", 0))
 }
 
 func TestAttackerHasAdvantageWhenScoreIsPositive(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
-
-	assert.Same(t, attacker, Advantage(attacker, defender, 1))
+	assert.Equal(t, "attacker", *Advantage("attacker", "defender", 1))
 }
 
 func TestDefenderHasAdvantageWhenScoreIsNegative(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
-
-	assert.Same(t, defender, Advantage(attacker, defender, -1))
+	assert.Equal(t, "defender", *Advantage("attacker", "defender", -1))
 }
 
 func TestNewWarIsOngoing(t *testing.T) {
@@ -190,9 +183,9 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 			length++
 		}
 
-		winner, err := war.Advantage(nationStatesProvider)
+		winnerID, err := war.Advantage(nationStatesProvider)
 		assert.NoError(t, err)
-		if winner != nil && winner.Id == attacker.Id {
+		if winnerID != nil && *winnerID == attacker.Id {
 			attackerWinCount++
 		} else {
 			defenderWinCount++
