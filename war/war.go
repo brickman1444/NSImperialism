@@ -10,8 +10,8 @@ import (
 )
 
 type War struct {
-	Attacker      *nationstates_api.Nation
-	Defender      *nationstates_api.Nation
+	AttackerID    string
+	DefenderID    string
 	Score         int // 100 is attacker wins, -100 is defender wins
 	Name          string
 	TerritoryName string
@@ -19,38 +19,29 @@ type War struct {
 }
 
 func (war War) AttackerNation(nationStatesProvider nationstates_api.NationStatesProvider) (nationstates_api.Nation, error) {
-	if war.Attacker == nil {
+
+	nation, err := nationStatesProvider.GetNationData(war.AttackerID)
+	if nation == nil {
 		return nationstates_api.Nation{}, errors.New("nil nation")
-	} else {
-		return *war.Attacker, nil
 	}
+	return *nation, err
 }
 
 func (war War) DefenderNation(nationStatesProvider nationstates_api.NationStatesProvider) (nationstates_api.Nation, error) {
-	if war.Defender == nil {
+
+	nation, err := nationstates_api.GetNationData(war.DefenderID)
+	if nation == nil {
 		return nationstates_api.Nation{}, errors.New("nil nation")
-	} else {
-		return *war.Defender, nil
 	}
+	return *nation, err
 }
 
 func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, territoryName string) War {
-	return War{attacker, defender, 0, name, territoryName, true}
+	return War{attacker.Id, defender.Id, 0, name, territoryName, true}
 }
 
 func (war *War) Advantage(nationStatesProvider nationstates_api.NationStatesProvider) (*string, error) {
-
-	attacker, err := war.AttackerNation(nationStatesProvider)
-	if err != nil {
-		return nil, err
-	}
-
-	defender, err := war.DefenderNation(nationStatesProvider)
-	if err != nil {
-		return nil, err
-	}
-
-	return Advantage(attacker.Id, defender.Id, war.Score), nil
+	return Advantage(war.AttackerID, war.DefenderID, war.Score), nil
 }
 
 func Advantage(attackerID string, defenderID string, score int) *string {
@@ -105,13 +96,23 @@ func FindOngoingWarAt(wars []War, territoryName string) *War {
 
 const battleScoreDelta = 40 // TODO: This should be 10 * number of years the war has been ongoing
 
-func (war *War) Tick() bool {
+func (war *War) Tick(nationStatesProvider nationstates_api.NationStatesProvider) (bool, error) {
 
 	if war.IsOngoing {
 
+		defender, err := nationStatesProvider.GetNationData(war.DefenderID)
+		if err != nil {
+			return false, err
+		}
+
+		attacker, err := nationStatesProvider.GetNationData(war.AttackerID)
+		if err != nil {
+			return false, err
+		}
+
 		// TODO: This should be divided by the number of territories controlled
-		defenderDefenseForcesInverted := 100 - war.Defender.GetDefenseForces()
-		attackerDefenseForcesInverted := 100 - war.Attacker.GetDefenseForces()
+		defenderDefenseForcesInverted := 100 - defender.GetDefenseForces()
+		attackerDefenseForcesInverted := 100 - attacker.GetDefenseForces()
 
 		randomRoll := rand.Intn(defenderDefenseForcesInverted + attackerDefenseForcesInverted)
 
@@ -123,9 +124,9 @@ func (war *War) Tick() bool {
 
 		if Abs(war.Score) >= 100 {
 			war.IsOngoing = false
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }

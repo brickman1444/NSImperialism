@@ -44,8 +44,8 @@ func GetWars(databaseMap databasemap.DatabaseMap, nationStatesProvider nationsta
 
 func DatabaseWarFromRuntimeWar(war War) databasemap.DatabaseWar {
 	return databasemap.DatabaseWar{
-		Attacker:      war.Attacker.Id,
-		Defender:      war.Defender.Id,
+		Attacker:      war.AttackerID,
+		Defender:      war.DefenderID,
 		Score:         war.Score,
 		ID:            war.Name,
 		TerritoryName: war.TerritoryName,

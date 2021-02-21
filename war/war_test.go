@@ -84,23 +84,27 @@ func TestNewWarIsOngoing(t *testing.T) {
 
 func TestATickedWarChangesScore(t *testing.T) {
 
-	defender := &nationstates_api.Nation{}
+	defender := nationstates_api.Nation{}
 	defender.SetDefenseForces(50)
 
-	attacker := &nationstates_api.Nation{}
+	attacker := nationstates_api.Nation{}
 	attacker.SetDefenseForces(0)
 
-	war := NewWar(attacker, defender, "", "")
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+	nationStatesProvider.PutNationData(defender)
+	nationStatesProvider.PutNationData(attacker)
+
+	war := NewWar(&attacker, &defender, "", "")
 
 	scoreTurnZero := war.Score
 	assert.Equal(t, 0, scoreTurnZero)
 
-	war.Tick()
+	war.Tick(nationStatesProvider)
 
 	scoreTurnOne := war.Score
 	assert.NotEqual(t, scoreTurnZero, scoreTurnOne)
 
-	war.Tick()
+	war.Tick(nationStatesProvider)
 
 	scoreTurnTwo := war.Score
 	assert.NotEqual(t, scoreTurnOne, scoreTurnTwo)
@@ -108,13 +112,17 @@ func TestATickedWarChangesScore(t *testing.T) {
 
 func TestATickedWarCanEnd(t *testing.T) {
 
-	defender := &nationstates_api.Nation{}
+	defender := nationstates_api.Nation{}
 	defender.SetDefenseForces(50)
 
-	attacker := &nationstates_api.Nation{}
+	attacker := nationstates_api.Nation{}
 	attacker.SetDefenseForces(0)
 
-	war := NewWar(attacker, defender, "", "")
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+	nationStatesProvider.PutNationData(defender)
+	nationStatesProvider.PutNationData(attacker)
+
+	war := NewWar(&attacker, &defender, "", "")
 
 	assert.True(t, war.IsOngoing)
 
@@ -122,8 +130,10 @@ func TestATickedWarCanEnd(t *testing.T) {
 	maximumTurnCount := 1000
 	finalTickResult := false
 	for war.IsOngoing && turnCount < maximumTurnCount {
-		finalTickResult = war.Tick()
+		tickResult, err := war.Tick(nationStatesProvider)
+		assert.NoError(t, err)
 		turnCount++
+		finalTickResult = tickResult
 	}
 
 	assert.True(t, finalTickResult)
@@ -179,7 +189,7 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 
 		length := 0
 		for war.IsOngoing {
-			war.Tick()
+			war.Tick(nationStatesProvider)
 			length++
 		}
 

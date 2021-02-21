@@ -276,7 +276,11 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 	}
 
 	for warIndex := range retrievedWars {
-		didFinish := retrievedWars[warIndex].Tick()
+		didFinish, err := retrievedWars[warIndex].Tick(nationStatesProvider)
+		if err != nil {
+			return err
+		}
+
 		if didFinish {
 
 			advantageID, err := retrievedWars[warIndex].Advantage(nationStatesProvider)
