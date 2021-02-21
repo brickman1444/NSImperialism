@@ -14,8 +14,7 @@ func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
 
 	war := NewWar(&attacker, &defender, "", "")
 
-	advantage, err := war.Advantage()
-	assert.NoError(t, err)
+	advantage := war.Advantage()
 
 	assert.Nil(t, advantage)
 }
@@ -27,8 +26,7 @@ func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
 	war := NewWar(&attacker, &defender, "", "")
 	war.Score = 1
 
-	advantageID, err := war.Advantage()
-	assert.NoError(t, err)
+	advantageID := war.Advantage()
 	assert.NotNil(t, advantageID)
 
 	assert.Equal(t, attacker.Id, *advantageID)
@@ -41,8 +39,7 @@ func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
 	war := NewWar(&attacker, &defender, "", "")
 	war.Score = -1
 
-	advantageID, err := war.Advantage()
-	assert.NoError(t, err)
+	advantageID := war.Advantage()
 	assert.NotNil(t, advantageID)
 
 	assert.Equal(t, defender.Id, *advantageID)
@@ -181,8 +178,7 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 			length++
 		}
 
-		winnerID, err := war.Advantage()
-		assert.NoError(t, err)
+		winnerID := war.Advantage()
 		if winnerID != nil && *winnerID == attacker.Id {
 			attackerWinCount++
 		} else {
