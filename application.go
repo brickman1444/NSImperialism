@@ -97,6 +97,28 @@ func renderPage(w http.ResponseWriter, bodyTemplateFileName string, data interfa
 	}
 }
 
+func getParticipatingNations(databaseMap databasemap.DatabaseMap) ([]nationstates_api.Nation, error) {
+	uniqueParticipantNationIDs := []string{}
+	for _, cell := range databaseMap.Cells {
+		if !contains(uniqueParticipantNationIDs, cell.Resident) {
+			uniqueParticipantNationIDs = append(uniqueParticipantNationIDs, cell.Resident)
+		}
+	}
+
+	nations := []nationstates_api.Nation{}
+	for _, nationID := range uniqueParticipantNationIDs {
+
+		nation, err := nationstates_api.GetNationData(nationID)
+		if err != nil {
+			return []nationstates_api.Nation{}, err
+		}
+
+		nations = append(nations, *nation)
+	}
+
+	return nations, nil
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
@@ -107,7 +129,22 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, maps, ""}
+	mapLinkDatas := []MapLinkData{}
+	for _, databaseMap := range maps {
+
+		participatingNations, err := getParticipatingNations(databaseMap)
+		if err != nil {
+			http.Error(w, "Failed to get map participants", http.StatusInternalServerError)
+			return
+		}
+
+		mapLinkDatas = append(mapLinkDatas, MapLinkData{
+			MapID:                databaseMap.ID,
+			ParticipatingNations: participatingNations,
+		})
+	}
+
+	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, mapLinkDatas, ""}
 
 	renderPage(w, "index.html", page)
 }
@@ -122,7 +159,7 @@ type Page struct {
 	Map            strategicmap.RenderedMap
 	Year           int
 	LoggedInNation *nationstates_api.Nation
-	Maps           []databasemap.DatabaseMap
+	Maps           []MapLinkData
 	MapID          string
 }
 
@@ -325,7 +362,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []databasemap.DatabaseMap{}, databaseMap.ID}
+	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []MapLinkData{}, databaseMap.ID}
 
 	renderPage(w, "map.html", page)
 }

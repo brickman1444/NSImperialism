@@ -2,7 +2,7 @@
   <h2>Maps</h2>
   <ul>
     {{ range .Maps }}
-    <li><a href="/maps/{{ .ID }}" class="usa-link">{{ .ID }}</a></li>
+    <li><a href="/maps/{{ .MapID }}" class="usa-link">{{ .MapID }}</a>{{ range .ParticipatingNations }} {{ .FlagThumbnail }}{{ end }}</li>
     {{ end }}
   </ul>
   {{ if .LoggedInNation }}
