@@ -21,7 +21,7 @@ func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation
 	return War{attacker.Id, defender.Id, 0, name, territoryName, true}
 }
 
-func (war *War) Advantage(nationStatesProvider nationstates_api.NationStatesProvider) (*string, error) {
+func (war *War) Advantage() (*string, error) {
 	return Advantage(war.AttackerID, war.DefenderID, war.Score), nil
 }
 
@@ -46,7 +46,7 @@ func Abs(i int) int {
 
 func (war *War) ScoreDescription(nationStatesProvider nationstates_api.NationStatesProvider) (template.HTML, error) {
 
-	advantageID, err := war.Advantage(nationStatesProvider)
+	advantageID, err := war.Advantage()
 	if err != nil {
 		return "", err
 	}

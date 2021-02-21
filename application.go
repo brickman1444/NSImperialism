@@ -283,7 +283,7 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 
 		if didFinish {
 
-			advantageID, err := retrievedWars[warIndex].Advantage(nationStatesProvider)
+			advantageID, err := retrievedWars[warIndex].Advantage()
 			if err != nil {
 				return err
 			}
