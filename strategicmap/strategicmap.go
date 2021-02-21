@@ -86,7 +86,7 @@ func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap
 		return territoryName + " " + string(residentNation.FlagThumbnail()), nil
 	}
 
-	attacker, err := war.AttackerNation(nationStatesProvider)
+	attacker, err := nationStatesProvider.GetNationData(war.AttackerID)
 	if err != nil {
 		return "", err
 	}

@@ -1,7 +1,6 @@
 package war
 
 import (
-	"errors"
 	"fmt"
 	"html/template"
 	"math/rand"
@@ -16,24 +15,6 @@ type War struct {
 	Name          string
 	TerritoryName string
 	IsOngoing     bool
-}
-
-func (war War) AttackerNation(nationStatesProvider nationstates_api.NationStatesProvider) (nationstates_api.Nation, error) {
-
-	nation, err := nationStatesProvider.GetNationData(war.AttackerID)
-	if nation == nil {
-		return nationstates_api.Nation{}, errors.New("nil nation")
-	}
-	return *nation, err
-}
-
-func (war War) DefenderNation(nationStatesProvider nationstates_api.NationStatesProvider) (nationstates_api.Nation, error) {
-
-	nation, err := nationstates_api.GetNationData(war.DefenderID)
-	if nation == nil {
-		return nationstates_api.Nation{}, errors.New("nil nation")
-	}
-	return *nation, err
 }
 
 func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, territoryName string) War {
