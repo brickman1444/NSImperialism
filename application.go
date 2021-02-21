@@ -169,7 +169,13 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	warName := fmt.Sprintf("The %s War for %s", attacker.Demonym, target)
+	occasion := r.FormValue("occasion")
+	if len(occasion) == 0 {
+		http.Error(w, "Invalid occasion for war", http.StatusBadRequest)
+		return
+	}
+
+	warName := fmt.Sprintf("The %s %s %s", attacker.Demonym, occasion, target)
 
 	defender, err := nationstates_api.GetNationData(defenderID)
 	if err != nil {
@@ -319,6 +325,16 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 	renderPage(w, "map.html", page)
 }
 
+func contains(list []string, valueToLookFor string) bool {
+	for _, element := range list {
+		if element == valueToLookFor {
+			return true
+		}
+	}
+
+	return false
+}
+
 func postMapHandler(w http.ResponseWriter, r *http.Request) {
 	participatingNationNames := strings.Split(r.FormValue("participating_nations"), ",")
 	if len(participatingNationNames) == 0 {
@@ -326,17 +342,33 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	participatingNationNamesCanonical := []string{}
 	for _, nationName := range participatingNationNames {
+		participatingNationNamesCanonical = append(participatingNationNamesCanonical, nationstates_api.GetCanonicalName(nationName))
+	}
+
+	loggedInNation := getLoggedInNationFromCookie(r)
+	if loggedInNation == nil {
+		http.Error(w, "You must be logged in to create a map.", http.StatusBadRequest)
+		return
+	}
+
+	if !contains(participatingNationNamesCanonical, loggedInNation.Id) {
+		http.Error(w, "You must participate in a map to create it.", http.StatusBadRequest)
+		return
+	}
+
+	for _, nationName := range participatingNationNamesCanonical {
 		nation, err := nationstates_api.GetNationData(nationName)
 		if nation == nil || err != nil {
-			http.Error(w, "Could not find nation "+nationName, http.StatusBadRequest)
+			http.Error(w, "Could not find nation '"+nationName+"'", http.StatusBadRequest)
 			return
 		}
 	}
 
-	databaseMap, err := strategicmap.MakeNewRandomMap(globalStrategicMap, participatingNationNames)
+	databaseMap, err := strategicmap.MakeNewRandomMap(globalStrategicMap, participatingNationNamesCanonical)
 	if err != nil {
-		http.Error(w, "Failed to create map", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
