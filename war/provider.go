@@ -14,25 +14,15 @@ func GetWars(databaseMap databasemap.DatabaseMap, nationStatesProvider nationsta
 	warsToReturn := make([]War, 0, len(databaseWars))
 	for _, databaseWar := range databaseWars {
 
-		attacker, err := nationStatesProvider.GetNationData(databaseWar.Attacker)
-		if err != nil {
-			return nil, err
-		}
-
-		if attacker == nil {
+		if len(databaseWar.Attacker) == 0 {
 			return nil, errors.New("Null attacker")
 		}
 
-		defender, err := nationStatesProvider.GetNationData(databaseWar.Defender)
-		if err != nil {
-			return nil, err
-		}
-
-		if defender == nil {
+		if len(databaseWar.Defender) == 0 {
 			return nil, errors.New("Null defender")
 		}
 
-		retrievedWar := NewWar(attacker, defender, databaseWar.ID, databaseWar.TerritoryName)
+		retrievedWar := NewWar(databaseWar.Attacker, databaseWar.Defender, databaseWar.ID, databaseWar.TerritoryName)
 		retrievedWar.IsOngoing = databaseWar.IsOngoing
 		retrievedWar.Score = databaseWar.Score
 

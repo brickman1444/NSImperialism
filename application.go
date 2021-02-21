@@ -227,7 +227,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attacker != nil && len(warName) != 0 {
-		newWar := war.NewWar(attacker, defender, warName, target)
+		newWar := war.NewWar(attacker.Id, defender.Id, warName, target)
 		war.PutWars(&databaseMap, []war.War{newWar})
 	}
 

@@ -17,8 +17,8 @@ type War struct {
 	IsOngoing     bool
 }
 
-func NewWar(attacker *nationstates_api.Nation, defender *nationstates_api.Nation, name string, territoryName string) War {
-	return War{attacker.Id, defender.Id, 0, name, territoryName, true}
+func NewWar(attackerID string, defenderID string, name string, territoryName string) War {
+	return War{attackerID, defenderID, 0, name, territoryName, true}
 }
 
 func (war *War) Advantage() *string {

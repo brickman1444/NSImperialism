@@ -9,10 +9,7 @@ import (
 )
 
 func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
-	defender := nationstates_api.Nation{Id: "defender"}
-	attacker := nationstates_api.Nation{Id: "attacker"}
-
-	war := NewWar(&attacker, &defender, "", "")
+	war := NewWar("attacker", "defender", "", "")
 
 	advantage := war.Advantage()
 
@@ -20,29 +17,23 @@ func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
 }
 
 func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
-	defender := nationstates_api.Nation{Id: "defender"}
-	attacker := nationstates_api.Nation{Id: "attacker"}
-
-	war := NewWar(&attacker, &defender, "", "")
+	war := NewWar("attacker", "defender", "", "")
 	war.Score = 1
 
 	advantageID := war.Advantage()
 	assert.NotNil(t, advantageID)
 
-	assert.Equal(t, attacker.Id, *advantageID)
+	assert.Equal(t, "attacker", *advantageID)
 }
 
 func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
-	defender := nationstates_api.Nation{Id: "defender"}
-	attacker := nationstates_api.Nation{Id: "attacker"}
-
-	war := NewWar(&attacker, &defender, "", "")
+	war := NewWar("attacker", "defender", "", "")
 	war.Score = -1
 
 	advantageID := war.Advantage()
 	assert.NotNil(t, advantageID)
 
-	assert.Equal(t, defender.Id, *advantageID)
+	assert.Equal(t, "defender", *advantageID)
 }
 
 func TestNoOneHasAdvantageWhenScoreIsZero(t *testing.T) {
@@ -58,28 +49,24 @@ func TestDefenderHasAdvantageWhenScoreIsNegative(t *testing.T) {
 }
 
 func TestNewWarIsOngoing(t *testing.T) {
-
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
-
-	war := NewWar(attacker, defender, "", "")
+	war := NewWar("", "", "", "")
 
 	assert.True(t, war.IsOngoing)
 }
 
 func TestATickedWarChangesScore(t *testing.T) {
 
-	defender := nationstates_api.Nation{}
+	defender := nationstates_api.Nation{Id: "defender"}
 	defender.SetDefenseForces(50)
 
-	attacker := nationstates_api.Nation{}
+	attacker := nationstates_api.Nation{Id: "attacker"}
 	attacker.SetDefenseForces(0)
 
 	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
 	nationStatesProvider.PutNationData(defender)
 	nationStatesProvider.PutNationData(attacker)
 
-	war := NewWar(&attacker, &defender, "", "")
+	war := NewWar(attacker.Id, defender.Id, "", "")
 
 	scoreTurnZero := war.Score
 	assert.Equal(t, 0, scoreTurnZero)
@@ -97,17 +84,17 @@ func TestATickedWarChangesScore(t *testing.T) {
 
 func TestATickedWarCanEnd(t *testing.T) {
 
-	defender := nationstates_api.Nation{}
+	defender := nationstates_api.Nation{Id: "defender"}
 	defender.SetDefenseForces(50)
 
-	attacker := nationstates_api.Nation{}
+	attacker := nationstates_api.Nation{Id: "attacker"}
 	attacker.SetDefenseForces(0)
 
 	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
 	nationStatesProvider.PutNationData(defender)
 	nationStatesProvider.PutNationData(attacker)
 
-	war := NewWar(&attacker, &defender, "", "")
+	war := NewWar(attacker.Id, defender.Id, "", "")
 
 	assert.True(t, war.IsOngoing)
 
@@ -126,11 +113,8 @@ func TestATickedWarCanEnd(t *testing.T) {
 }
 
 func TestFindOngoingWarFindsAWar(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
-
-	warAtA := NewWar(attacker, defender, "warAtA", "A")
-	warAtB := NewWar(attacker, defender, "warAtB", "A")
+	warAtA := NewWar("", "", "warAtA", "A")
+	warAtB := NewWar("", "", "warAtB", "A")
 
 	foundWar := FindOngoingWarAt([]War{warAtA, warAtB}, "A")
 
@@ -138,10 +122,7 @@ func TestFindOngoingWarFindsAWar(t *testing.T) {
 }
 
 func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
-	defender := &nationstates_api.Nation{}
-	attacker := &nationstates_api.Nation{}
-
-	war := NewWar(attacker, defender, "", "A")
+	war := NewWar("", "", "", "A")
 	war.IsOngoing = false
 
 	foundWar := FindOngoingWarAt([]War{war}, "A")
@@ -170,7 +151,7 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 	totalNumberOfSimulations := 10000
 
 	for warIndex := 0; warIndex < totalNumberOfSimulations; warIndex++ {
-		war := NewWar(attacker, defender, "", "")
+		war := NewWar(attacker.Id, defender.Id, "", "")
 
 		length := 0
 		for war.IsOngoing {
