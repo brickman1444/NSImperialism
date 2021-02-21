@@ -43,12 +43,7 @@ func DatabaseWarFromRuntimeWar(war War) databasemap.DatabaseWar {
 	}
 }
 
-func PutWars(databaseMap *databasemap.DatabaseMap, warsToAdd []War) {
+func PutWars(databaseMap *databasemap.DatabaseMap, warsToAdd []databasemap.DatabaseWar) {
 
-	databaseWarsToPut := make([]databasemap.DatabaseWar, 0, len(warsToAdd))
-	for _, warToAdd := range warsToAdd {
-		databaseWarsToPut = append(databaseWarsToPut, DatabaseWarFromRuntimeWar(warToAdd))
-	}
-
-	databaseMap.PutWars(databaseWarsToPut)
+	databaseMap.PutWars(warsToAdd)
 }

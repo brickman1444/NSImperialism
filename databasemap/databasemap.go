@@ -16,6 +16,10 @@ type DatabaseWar struct {
 	IsOngoing     bool
 }
 
+func NewWar(attacker string, defender string, id string, territoryName string) DatabaseWar {
+	return DatabaseWar{Attacker: attacker, Defender: defender, Score: 0, ID: id, TerritoryName: territoryName, IsOngoing: true}
+}
+
 type DatabaseMap struct {
 	ID    string
 	Year  int
