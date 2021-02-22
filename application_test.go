@@ -53,7 +53,7 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		err := residentNations.SetResident("A", defender.Id)
 		assert.NoError(t, err)
 
-		war.PutWars(&residentNations, []databasemap.DatabaseWar{theWar})
+		residentNations.PutWars([]databasemap.DatabaseWar{theWar})
 
 		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
@@ -106,7 +106,7 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 	residentNations := databasemap.NewDatabaseMapWithTerritories([]string{"A"})
 	residentNations.SetResident("A", defender.Id)
 
-	war.PutWars(&residentNations, []databasemap.DatabaseWar{databasemap.NewWar(attacker.Id, defender.Id, "warForA", "A")})
+	residentNations.PutWars([]databasemap.DatabaseWar{databasemap.NewWar(attacker.Id, defender.Id, "warForA", "A")})
 
 	tick(&residentNations, nationStatesProvider)
 

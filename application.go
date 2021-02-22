@@ -224,7 +224,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	if attacker != nil && len(warName) != 0 {
 		newWar := databasemap.NewWar(attacker.Id, defender.Id, warName, target)
-		war.PutWars(&databaseMap, []databasemap.DatabaseWar{newWar})
+		databaseMap.PutWars([]databasemap.DatabaseWar{newWar})
 	}
 
 	err = globalMaps.PutMap(databaseMap)
@@ -286,7 +286,7 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 		}
 	}
 
-	war.PutWars(residentNations, databaseWars)
+	residentNations.PutWars(databaseWars)
 
 	return nil
 }

@@ -9,19 +9,6 @@ import (
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
 
-type War struct {
-	AttackerID    string
-	DefenderID    string
-	Score         int // 100 is attacker wins, -100 is defender wins
-	Name          string
-	TerritoryName string
-	IsOngoing     bool
-}
-
-func NewWar(attackerID string, defenderID string, name string, territoryName string) War {
-	return War{attackerID, defenderID, 0, name, territoryName, true}
-}
-
 func WarAdvantage(war databasemap.DatabaseWar) *string {
 	return Advantage(war.Attacker, war.Defender, war.Score)
 }

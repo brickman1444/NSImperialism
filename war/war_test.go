@@ -50,7 +50,7 @@ func TestDefenderHasAdvantageWhenScoreIsNegative(t *testing.T) {
 }
 
 func TestNewWarIsOngoing(t *testing.T) {
-	war := NewWar("", "", "", "")
+	war := databasemap.NewWar("", "", "", "")
 
 	assert.True(t, war.IsOngoing)
 }
