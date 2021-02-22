@@ -11,16 +11,14 @@
 <body class="usa-section--dark">
     <header class="usa-header">
         <h1><a href="/">NSImperialism (Alpha)</a></h1>
-        <p>The server may reset the state of the game at any time.</p>
+        <p><small>The server may reset the state of the game at any time.</small></p>
     </header>
 
     <header class="usa-header">
         {{ if .LoggedInNation }}
-        <h2>Your Nation</h2>
-        {{ .LoggedInNation.FlagAndName }}
-        <div>Defense Forces: Top {{.LoggedInNation.GetDefenseForces }}% in the world</div>
+        <div>Your Nation: {{ .LoggedInNation.FlagAndName }}</div>
         <form action="/logout" method="POST">
-            <button type="submit" class="usa-button">Logout</button>
+            <button type="submit" class="usa-button--outline">Logout</button>
         </form>
         {{ else }}
         <h2>Login</h2>
