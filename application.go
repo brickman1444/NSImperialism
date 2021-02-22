@@ -442,9 +442,15 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	ErrorHandler(w, r, "Page not found.")
+}
 
-	page := Page{LoggedInNation: getLoggedInNationFromCookie(r), Error: "Page not found."}
+func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	ErrorHandler(w, r, "What you're trying to do is not supported.")
+}
 
+func ErrorHandler(w http.ResponseWriter, r *http.Request, message string) {
+	page := Page{LoggedInNation: getLoggedInNationFromCookie(r), Error: message}
 	renderPage(w, "error.html", page)
 }
 
@@ -472,6 +478,7 @@ func main() {
 	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
 
 	mux.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
+	mux.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowedHandler)
 
 	http.ListenAndServe(":5000", mux)
 }
