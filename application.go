@@ -145,7 +145,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	page := &Page{[]war.War{}, strategicmap.RenderedMap{}, 0, loggedInNation, mapLinkDatas, ""}
+	page := &Page{LoggedInNation: loggedInNation, Maps: mapLinkDatas}
 
 	renderPage(w, "index.html", page)
 }
@@ -162,6 +162,7 @@ type Page struct {
 	LoggedInNation *nationstates_api.Nation
 	Maps           []MapLinkData
 	MapID          string
+	Error          string
 }
 
 func warHandler(w http.ResponseWriter, r *http.Request) {
@@ -379,7 +380,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{retrievedWars, renderedMap, databaseMap.Year, loggedInNation, []MapLinkData{}, databaseMap.ID}
+	page := &Page{Wars: retrievedWars, Map: renderedMap, Year: databaseMap.Year, LoggedInNation: loggedInNation, MapID: databaseMap.ID}
 
 	renderPage(w, "map.html", page)
 }
@@ -440,6 +441,13 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/maps/"+databaseMap.ID, http.StatusSeeOther)
 }
 
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+
+	page := Page{LoggedInNation: getLoggedInNationFromCookie(r), Error: "Page not found."}
+
+	renderPage(w, "error.html", page)
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -462,6 +470,8 @@ func main() {
 	mux.HandleFunc("/logout", logoutHandler).Methods("POST")
 	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
 	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
+
+	mux.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
 
 	http.ListenAndServe(":5000", mux)
 }
