@@ -126,7 +126,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	maps, err := dynamodbwrapper.GetAllMaps()
 	if err != nil {
-		http.Error(w, "Failed to get map IDs", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to get map IDs")
 		return
 	}
 
@@ -135,7 +135,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 		participatingNations, err := getParticipatingNations(databaseMap)
 		if err != nil {
-			http.Error(w, "Failed to get map participants", http.StatusInternalServerError)
+			ErrorHandler(w, r, "Failed to get map participants")
 			return
 		}
 
@@ -169,7 +169,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	attacker := getLoggedInNationFromCookie(r)
 	if attacker == nil {
-		http.Error(w, "You must be logged in to attack", http.StatusBadRequest)
+		ErrorHandler(w, r, "You must be logged in to attack")
 		return
 	}
 
@@ -178,7 +178,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	databaseMap, err := globalMaps.GetMap(mapID)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get map"), http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to get map")
 		return
 	}
 
@@ -186,36 +186,35 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	defenderID, err := databaseMap.GetResident(target)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get defender for %s", target), http.StatusInternalServerError)
+		ErrorHandler(w, r, fmt.Sprintf("Failed to get defender for %s", target))
 		return
 	}
 
 	if defenderID == "" {
-		http.Error(w, fmt.Sprintf("No nation resides in %s", target), http.StatusBadRequest)
+		ErrorHandler(w, r, fmt.Sprintf("No nation resides in %s", target))
 		return
 	}
 
 	if attacker.Id == defenderID {
-		http.Error(w, fmt.Sprintf("You can't attack yourself"), http.StatusBadRequest)
+		ErrorHandler(w, r, fmt.Sprintf("You can't attack yourself"))
 		return
 	}
 
 	retrievedWars, err := war.GetWars(databaseMap, globalNationStatesProvider)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to retrieve wars")
 		return
 	}
 
 	currentWar := war.FindOngoingWarAt(retrievedWars, target)
 	if currentWar != nil {
-		http.Error(w, fmt.Sprintf("There is already a war at %s", target), http.StatusBadRequest)
+		ErrorHandler(w, r, fmt.Sprintf("There is already a war at %s", target))
 		return
 	}
 
 	occasion := r.FormValue("occasion")
 	if len(occasion) == 0 {
-		http.Error(w, "Invalid occasion for war", http.StatusBadRequest)
+		ErrorHandler(w, r, "You didn't choose a valid occasion for war")
 		return
 	}
 
@@ -223,7 +222,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	defender, err := nationstates_api.GetNationData(defenderID)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get defender data for %s", defenderID), http.StatusInternalServerError)
+		ErrorHandler(w, r, fmt.Sprintf("Failed to get defender data for %s", defenderID))
 		return
 	}
 
@@ -234,7 +233,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = globalMaps.PutMap(databaseMap)
 	if err != nil {
-		http.Error(w, "Failed to save map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to save map")
 		return
 	}
 
@@ -248,19 +247,19 @@ func tickHandler(w http.ResponseWriter, r *http.Request) {
 
 	databaseMap, err := globalMaps.GetMap(mapID)
 	if err != nil {
-		http.Error(w, "Failed to get map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to get map")
 		return
 	}
 
 	err = tick(&databaseMap, globalNationStatesProvider)
 	if err != nil {
-		http.Error(w, "Failed to tick map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to tick map")
 		return
 	}
 
 	err = globalMaps.PutMap(databaseMap)
 	if err != nil {
-		http.Error(w, "Failed to save map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to save map")
 		return
 	}
 
@@ -313,14 +312,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	nationName := nationstates_api.GetCanonicalName(r.FormValue("nation_name"))
 	verificationCode := r.FormValue("verification_code")
 	if nationName == "" || verificationCode == "" {
-		http.Error(w, "Invalid request to login. Try again.", http.StatusBadRequest)
+		ErrorHandler(w, r, "Invalid request to login. Try again.")
 		return
 	}
 
 	isVerified, err := nationstates_api.IsCorrectVerificationCode(nationName, verificationCode)
 	if err != nil {
-		log.Println("Failed to verify nation", nationName, err.Error())
-		http.Error(w, "Failed to verify nation", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to verify nation "+nationName)
 		return
 	}
 
@@ -344,7 +342,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 	if loggedInNation == nil {
-		http.Error(w, "You must be logged in to log out.", http.StatusBadRequest)
+		ErrorHandler(w, r, "You must be logged in to log out.")
 		return
 	}
 
@@ -360,21 +358,20 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	databaseMap, err := globalMaps.GetMap(mapID)
 	if err != nil {
-		http.Error(w, "Failed to retrieve map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to retrieve map")
 		return
 	}
 
 	retrievedWars, err := war.GetWars(databaseMap, globalNationStatesProvider)
 	if err != nil {
 		log.Println(err.Error())
-		http.Error(w, "Failed to retrieve wars", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to retrieve wars")
 		return
 	}
 
 	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, retrievedWars, globalNationStatesProvider)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Failed to render map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to render map")
 		return
 	}
 
@@ -398,7 +395,7 @@ func contains(list []string, valueToLookFor string) bool {
 func postMapHandler(w http.ResponseWriter, r *http.Request) {
 	participatingNationNames := strings.Split(r.FormValue("participating_nations"), ",")
 	if len(participatingNationNames) == 0 {
-		http.Error(w, "List of participating nations was empty", http.StatusBadRequest)
+		ErrorHandler(w, r, "List of participating nations was empty.")
 		return
 	}
 
@@ -409,32 +406,32 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 	if loggedInNation == nil {
-		http.Error(w, "You must be logged in to create a map.", http.StatusBadRequest)
+		ErrorHandler(w, r, "You must be logged in to create a map.")
 		return
 	}
 
 	if !contains(participatingNationNamesCanonical, loggedInNation.Id) {
-		http.Error(w, "You must participate in a map to create it.", http.StatusBadRequest)
+		ErrorHandler(w, r, "You must participate in a map to create it. Add your nation to the list of participants and try again.")
 		return
 	}
 
 	for _, nationName := range participatingNationNamesCanonical {
 		nation, err := nationstates_api.GetNationData(nationName)
 		if nation == nil || err != nil {
-			http.Error(w, "Could not find nation '"+nationName+"'", http.StatusBadRequest)
+			ErrorHandler(w, r, "Could not find nation '"+nationName+"'. Check for typing or spelling errors such as extra spaces and try again.")
 			return
 		}
 	}
 
 	databaseMap, err := strategicmap.MakeNewRandomMap(globalStrategicMap, participatingNationNamesCanonical)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ErrorHandler(w, r, err.Error())
 		return
 	}
 
 	err = dynamodbwrapper.PutMap(databaseMap)
 	if err != nil {
-		http.Error(w, "Failed to save map", http.StatusInternalServerError)
+		ErrorHandler(w, r, "Failed to save map. Try again later.")
 		return
 	}
 
