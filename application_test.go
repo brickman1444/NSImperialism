@@ -47,13 +47,13 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		attacker.SetDefenseForces(0)
 		nationStatesProvider.PutNationData(*attacker)
 
-		theWar := war.NewWar(attacker.Id, defender.Id, "", "A")
+		theWar := databasemap.NewWar(attacker.Id, defender.Id, "", "A")
 
 		residentNations := databasemap.NewDatabaseMapWithTerritories([]string{"A"})
 		err := residentNations.SetResident("A", defender.Id)
 		assert.NoError(t, err)
 
-		war.PutWars(&residentNations, []databasemap.DatabaseWar{war.DatabaseWarFromRuntimeWar(theWar)})
+		war.PutWars(&residentNations, []databasemap.DatabaseWar{theWar})
 
 		for warTurnCount := 0; warTurnCount < 1000; warTurnCount++ {
 
@@ -72,10 +72,10 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, wars, 1)
 
-		finishedWar := wars[0]
+		finishedWar := war.DatabaseWarFromRuntimeWar(wars[0])
 		assert.False(t, finishedWar.IsOngoing)
 
-		advantageID := finishedWar.Advantage()
+		advantageID := war.WarAdvantage(finishedWar)
 		assert.NotNil(t, advantageID)
 
 		if *advantageID == attacker.Id {

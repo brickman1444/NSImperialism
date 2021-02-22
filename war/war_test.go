@@ -4,33 +4,34 @@ import (
 	"math"
 	"testing"
 
+	"github.com/brickman1444/NSImperialism/databasemap"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
-	war := NewWar("attacker", "defender", "", "")
+	war := databasemap.NewWar("attacker", "defender", "", "")
 
-	advantage := war.Advantage()
+	advantage := WarAdvantage(war)
 
 	assert.Nil(t, advantage)
 }
 
 func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
-	war := NewWar("attacker", "defender", "", "")
+	war := databasemap.NewWar("attacker", "defender", "", "")
 	war.Score = 1
 
-	advantageID := war.Advantage()
+	advantageID := WarAdvantage(war)
 	assert.NotNil(t, advantageID)
 
 	assert.Equal(t, "attacker", *advantageID)
 }
 
 func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
-	war := NewWar("attacker", "defender", "", "")
+	war := databasemap.NewWar("attacker", "defender", "", "")
 	war.Score = -1
 
-	advantageID := war.Advantage()
+	advantageID := WarAdvantage(war)
 	assert.NotNil(t, advantageID)
 
 	assert.Equal(t, "defender", *advantageID)
@@ -66,17 +67,17 @@ func TestATickedWarChangesScore(t *testing.T) {
 	nationStatesProvider.PutNationData(defender)
 	nationStatesProvider.PutNationData(attacker)
 
-	war := NewWar(attacker.Id, defender.Id, "", "")
+	war := databasemap.NewWar(attacker.Id, defender.Id, "", "")
 
 	scoreTurnZero := war.Score
 	assert.Equal(t, 0, scoreTurnZero)
 
-	war.Tick(nationStatesProvider)
+	Tick(&war, nationStatesProvider)
 
 	scoreTurnOne := war.Score
 	assert.NotEqual(t, scoreTurnZero, scoreTurnOne)
 
-	war.Tick(nationStatesProvider)
+	Tick(&war, nationStatesProvider)
 
 	scoreTurnTwo := war.Score
 	assert.NotEqual(t, scoreTurnOne, scoreTurnTwo)
@@ -94,7 +95,7 @@ func TestATickedWarCanEnd(t *testing.T) {
 	nationStatesProvider.PutNationData(defender)
 	nationStatesProvider.PutNationData(attacker)
 
-	war := NewWar(attacker.Id, defender.Id, "", "")
+	war := databasemap.NewWar(attacker.Id, defender.Id, "", "")
 
 	assert.True(t, war.IsOngoing)
 
@@ -102,7 +103,7 @@ func TestATickedWarCanEnd(t *testing.T) {
 	maximumTurnCount := 1000
 	finalTickResult := false
 	for war.IsOngoing && turnCount < maximumTurnCount {
-		tickResult, err := war.Tick(nationStatesProvider)
+		tickResult, err := Tick(&war, nationStatesProvider)
 		assert.NoError(t, err)
 		turnCount++
 		finalTickResult = tickResult
@@ -151,15 +152,15 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 	totalNumberOfSimulations := 10000
 
 	for warIndex := 0; warIndex < totalNumberOfSimulations; warIndex++ {
-		war := NewWar(attacker.Id, defender.Id, "", "")
+		war := databasemap.NewWar(attacker.Id, defender.Id, "", "")
 
 		length := 0
 		for war.IsOngoing {
-			war.Tick(nationStatesProvider)
+			Tick(&war, nationStatesProvider)
 			length++
 		}
 
-		winnerID := war.Advantage()
+		winnerID := WarAdvantage(war)
 		if winnerID != nil && *winnerID == attacker.Id {
 			attackerWinCount++
 		} else {

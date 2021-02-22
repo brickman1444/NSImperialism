@@ -227,8 +227,8 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attacker != nil && len(warName) != 0 {
-		newWar := war.NewWar(attacker.Id, defender.Id, warName, target)
-		war.PutWars(&databaseMap, []databasemap.DatabaseWar{war.DatabaseWarFromRuntimeWar(newWar)})
+		newWar := databasemap.NewWar(attacker.Id, defender.Id, warName, target)
+		war.PutWars(&databaseMap, []databasemap.DatabaseWar{newWar})
 	}
 
 	err = globalMaps.PutMap(databaseMap)
@@ -275,27 +275,27 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 		return err
 	}
 
-	for warIndex := range retrievedWars {
-		didFinish, err := retrievedWars[warIndex].Tick(nationStatesProvider)
+	databaseWars := []databasemap.DatabaseWar{}
+	for _, runtimeWar := range retrievedWars {
+		databaseWars = append(databaseWars, war.DatabaseWarFromRuntimeWar(runtimeWar))
+	}
+
+	for warIndex := range databaseWars {
+		didFinish, err := war.Tick(&databaseWars[warIndex], nationStatesProvider)
 		if err != nil {
 			return err
 		}
 
 		if didFinish {
 
-			advantageID := retrievedWars[warIndex].Advantage()
+			advantageID := war.WarAdvantage(databaseWars[warIndex])
 
 			if advantageID == nil {
 				return errors.New("Nil war winner ID")
 			}
 
-			residentNations.SetResident(retrievedWars[warIndex].TerritoryName, *advantageID)
+			residentNations.SetResident(databaseWars[warIndex].TerritoryName, *advantageID)
 		}
-	}
-
-	databaseWars := []databasemap.DatabaseWar{}
-	for _, runtimeWar := range retrievedWars {
-		databaseWars = append(databaseWars, war.DatabaseWarFromRuntimeWar(runtimeWar))
 	}
 
 	war.PutWars(residentNations, databaseWars)

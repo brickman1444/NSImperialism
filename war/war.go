@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"math/rand"
 
+	"github.com/brickman1444/NSImperialism/databasemap"
 	"github.com/brickman1444/NSImperialism/nationstates_api"
 )
 
@@ -21,8 +22,8 @@ func NewWar(attackerID string, defenderID string, name string, territoryName str
 	return War{attackerID, defenderID, 0, name, territoryName, true}
 }
 
-func (war *War) Advantage() *string {
-	return Advantage(war.AttackerID, war.DefenderID, war.Score)
+func WarAdvantage(war databasemap.DatabaseWar) *string {
+	return Advantage(war.Attacker, war.Defender, war.Score)
 }
 
 func Advantage(attackerID string, defenderID string, score int) *string {
@@ -46,7 +47,7 @@ func Abs(i int) int {
 
 func (war *War) ScoreDescription(nationStatesProvider nationstates_api.NationStatesProvider) (template.HTML, error) {
 
-	advantageID := war.Advantage()
+	advantageID := WarAdvantage(DatabaseWarFromRuntimeWar(*war))
 
 	advantageDescription := ""
 	if advantageID != nil {
@@ -74,16 +75,16 @@ func FindOngoingWarAt(wars []War, territoryName string) *War {
 
 const battleScoreDelta = 40 // TODO: This should be 10 * number of years the war has been ongoing
 
-func (war *War) Tick(nationStatesProvider nationstates_api.NationStatesProvider) (bool, error) {
+func Tick(war *databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (bool, error) {
 
 	if war.IsOngoing {
 
-		defender, err := nationStatesProvider.GetNationData(war.DefenderID)
+		defender, err := nationStatesProvider.GetNationData(war.Defender)
 		if err != nil {
 			return false, err
 		}
 
-		attacker, err := nationStatesProvider.GetNationData(war.AttackerID)
+		attacker, err := nationStatesProvider.GetNationData(war.Attacker)
 		if err != nil {
 			return false, err
 		}
