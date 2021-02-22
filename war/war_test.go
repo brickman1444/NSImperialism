@@ -10,7 +10,7 @@ import (
 )
 
 func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
-	war := databasemap.NewWar("attacker", "defender", "", "")
+	war := databasemap.NewWar("attacker", "defender", "", "", 0)
 
 	advantage := WarAdvantage(war)
 
@@ -18,7 +18,7 @@ func TestNoOneHasAdvantageWhenWarScoreIsZero(t *testing.T) {
 }
 
 func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
-	war := databasemap.NewWar("attacker", "defender", "", "")
+	war := databasemap.NewWar("attacker", "defender", "", "", 0)
 	war.Score = 1
 
 	advantageID := WarAdvantage(war)
@@ -28,7 +28,7 @@ func TestAttackerHasAdvantageWhenWarHasPositiveScore(t *testing.T) {
 }
 
 func TestDefenderHasAdvantageWhenWarHasNegativeScore(t *testing.T) {
-	war := databasemap.NewWar("attacker", "defender", "", "")
+	war := databasemap.NewWar("attacker", "defender", "", "", 0)
 	war.Score = -1
 
 	advantageID := WarAdvantage(war)
@@ -50,7 +50,7 @@ func TestDefenderHasAdvantageWhenScoreIsNegative(t *testing.T) {
 }
 
 func TestNewWarIsOngoing(t *testing.T) {
-	war := databasemap.NewWar("", "", "", "")
+	war := databasemap.NewWar("", "", "", "", 0)
 
 	assert.True(t, war.IsOngoing)
 }
@@ -67,17 +67,20 @@ func TestATickedWarChangesScore(t *testing.T) {
 	nationStatesProvider.PutNationData(defender)
 	nationStatesProvider.PutNationData(attacker)
 
-	war := databasemap.NewWar(attacker.Id, defender.Id, "", "")
+	year := 0
+	war := databasemap.NewWar(attacker.Id, defender.Id, "", "", year)
 
 	scoreTurnZero := war.Score
 	assert.Equal(t, 0, scoreTurnZero)
+	year++
 
-	Tick(&war, nationStatesProvider)
+	Tick(&war, nationStatesProvider, year)
 
 	scoreTurnOne := war.Score
 	assert.NotEqual(t, scoreTurnZero, scoreTurnOne)
+	year++
 
-	Tick(&war, nationStatesProvider)
+	Tick(&war, nationStatesProvider, year)
 
 	scoreTurnTwo := war.Score
 	assert.NotEqual(t, scoreTurnOne, scoreTurnTwo)
@@ -95,17 +98,17 @@ func TestATickedWarCanEnd(t *testing.T) {
 	nationStatesProvider.PutNationData(defender)
 	nationStatesProvider.PutNationData(attacker)
 
-	war := databasemap.NewWar(attacker.Id, defender.Id, "", "")
+	year := 0
+	war := databasemap.NewWar(attacker.Id, defender.Id, "", "", year)
 
 	assert.True(t, war.IsOngoing)
 
-	turnCount := 0
 	maximumTurnCount := 1000
 	finalTickResult := false
-	for war.IsOngoing && turnCount < maximumTurnCount {
-		tickResult, err := Tick(&war, nationStatesProvider)
+	for war.IsOngoing && year < maximumTurnCount {
+		tickResult, err := Tick(&war, nationStatesProvider, year)
 		assert.NoError(t, err)
-		turnCount++
+		year++
 		finalTickResult = tickResult
 	}
 
@@ -114,8 +117,8 @@ func TestATickedWarCanEnd(t *testing.T) {
 }
 
 func TestFindOngoingWarFindsAWar(t *testing.T) {
-	warAtA := databasemap.NewWar("", "", "warAtA", "A")
-	warAtB := databasemap.NewWar("", "", "warAtB", "A")
+	warAtA := databasemap.NewWar("", "", "warAtA", "A", 0)
+	warAtB := databasemap.NewWar("", "", "warAtB", "A", 0)
 
 	foundWar := FindOngoingWarAt([]databasemap.DatabaseWar{warAtA, warAtB}, "A")
 
@@ -123,7 +126,7 @@ func TestFindOngoingWarFindsAWar(t *testing.T) {
 }
 
 func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
-	war := databasemap.NewWar("", "", "", "A")
+	war := databasemap.NewWar("", "", "", "A", 0)
 	war.IsOngoing = false
 
 	foundWar := FindOngoingWarAt([]databasemap.DatabaseWar{war}, "A")
@@ -145,19 +148,16 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 
 	attackerWinCount := 0
 	defenderWinCount := 0
-	totalLength := 0
-	minimumLength := math.MaxInt32
-	maximumLength := 0
 
 	totalNumberOfSimulations := 10000
 
 	for warIndex := 0; warIndex < totalNumberOfSimulations; warIndex++ {
-		war := databasemap.NewWar(attacker.Id, defender.Id, "", "")
+		year := 0
+		war := databasemap.NewWar(attacker.Id, defender.Id, "", "", year)
 
-		length := 0
 		for war.IsOngoing {
-			Tick(&war, nationStatesProvider)
-			length++
+			Tick(&war, nationStatesProvider, year)
+			year++
 		}
 
 		winnerID := WarAdvantage(war)
@@ -166,23 +166,53 @@ func TestMorePowerfulNationDoesntAlwaysWinWar(t *testing.T) {
 		} else {
 			defenderWinCount++
 		}
+	}
 
-		totalLength = totalLength + length
+	assert.Greater(t, attackerWinCount, totalNumberOfSimulations/10)
+	assert.Greater(t, defenderWinCount, totalNumberOfSimulations/10)
+	assert.Greater(t, attackerWinCount, defenderWinCount)
+}
 
-		if length < minimumLength {
-			minimumLength = length
+func TestWarsDontTakeALongTimeToResolve(t *testing.T) {
+
+	nationStatesProvider := nationstates_api.NewNationStatesProviderSimpleMap()
+
+	defender := &nationstates_api.Nation{Id: "Defender"}
+	defender.SetDefenseForces(60)
+	nationStatesProvider.PutNationData(*defender)
+
+	attacker := &nationstates_api.Nation{Id: "Attacker"}
+	attacker.SetDefenseForces(40)
+	nationStatesProvider.PutNationData(*attacker)
+
+	totalLength := 0
+	minimumLength := math.MaxInt32
+	maximumLength := 0
+
+	totalNumberOfSimulations := 10000
+
+	for warIndex := 0; warIndex < totalNumberOfSimulations; warIndex++ {
+		year := 0
+		war := databasemap.NewWar(attacker.Id, defender.Id, "", "", year)
+
+		for war.IsOngoing {
+			Tick(&war, nationStatesProvider, year)
+			year++
 		}
-		if length > maximumLength {
-			maximumLength = length
+
+		totalLength = totalLength + year
+
+		if year < minimumLength {
+			minimumLength = year
+		}
+		if year > maximumLength {
+			maximumLength = year
 		}
 	}
 
 	averageLength := float32(totalLength) / float32(totalNumberOfSimulations)
 
-	assert.Greater(t, attackerWinCount, totalNumberOfSimulations/10)
-	assert.Greater(t, defenderWinCount, totalNumberOfSimulations/10)
-	assert.Greater(t, attackerWinCount, defenderWinCount)
-	assert.Greater(t, minimumLength, 2)
-	assert.Less(t, maximumLength, 70)
+	assert.Greater(t, minimumLength, 4)
+	assert.Less(t, maximumLength, 25)
 	assert.Less(t, averageLength, float32(9))
 }

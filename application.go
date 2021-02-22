@@ -223,7 +223,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if attacker != nil && len(warName) != 0 {
-		newWar := databasemap.NewWar(attacker.Id, defender.Id, warName, target)
+		newWar := databasemap.NewWar(attacker.Id, defender.Id, warName, target, databaseMap.Year)
 		databaseMap.PutWars([]databasemap.DatabaseWar{newWar})
 	}
 
@@ -269,7 +269,7 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 	databaseWars := residentNations.GetWars()
 
 	for warIndex := range databaseWars {
-		didFinish, err := war.Tick(&databaseWars[warIndex], nationStatesProvider)
+		didFinish, err := war.Tick(&databaseWars[warIndex], nationStatesProvider, residentNations.Year)
 		if err != nil {
 			return err
 		}

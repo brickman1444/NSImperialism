@@ -58,9 +58,9 @@ func FindOngoingWarAt(wars []databasemap.DatabaseWar, territoryName string) *dat
 	return nil
 }
 
-const battleScoreDelta = 40 // TODO: This should be 10 * number of years the war has been ongoing
+const battleScoreDelta = 10
 
-func Tick(war *databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (bool, error) {
+func Tick(war *databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider, currentYear int) (bool, error) {
 
 	if war.IsOngoing {
 
@@ -81,9 +81,9 @@ func Tick(war *databasemap.DatabaseWar, nationStatesProvider nationstates_api.Na
 		randomRoll := rand.Intn(defenderDefenseForcesInverted + attackerDefenseForcesInverted)
 
 		if randomRoll < defenderDefenseForcesInverted {
-			war.Score -= battleScoreDelta
+			war.Score -= battleScoreDelta * (currentYear - war.StartYear)
 		} else {
-			war.Score += battleScoreDelta
+			war.Score += battleScoreDelta * (currentYear - war.StartYear)
 		}
 
 		if Abs(war.Score) >= 100 {
