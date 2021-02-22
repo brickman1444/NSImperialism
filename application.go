@@ -156,7 +156,7 @@ type MapLinkData struct {
 }
 
 type Page struct {
-	Wars           []war.War
+	Wars           []war.RenderedWar
 	Map            strategicmap.RenderedMap
 	Year           int
 	LoggedInNation *nationstates_api.Nation
@@ -200,11 +200,7 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars, err := war.GetWars(databaseMap, globalNationStatesProvider)
-	if err != nil {
-		ErrorHandler(w, r, "Failed to retrieve wars")
-		return
-	}
+	retrievedWars := databaseMap.GetWars()
 
 	currentWar := war.FindOngoingWarAt(retrievedWars, target)
 	if currentWar != nil {
@@ -270,15 +266,7 @@ func tick(residentNations *databasemap.DatabaseMap, nationStatesProvider nations
 
 	residentNations.Year++
 
-	retrievedWars, err := war.GetWars(*residentNations, nationStatesProvider)
-	if err != nil {
-		return err
-	}
-
-	databaseWars := []databasemap.DatabaseWar{}
-	for _, runtimeWar := range retrievedWars {
-		databaseWars = append(databaseWars, war.DatabaseWarFromRuntimeWar(runtimeWar))
-	}
+	databaseWars := residentNations.GetWars()
 
 	for warIndex := range databaseWars {
 		didFinish, err := war.Tick(&databaseWars[warIndex], nationStatesProvider)
@@ -362,12 +350,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars, err := war.GetWars(databaseMap, globalNationStatesProvider)
-	if err != nil {
-		log.Println(err.Error())
-		ErrorHandler(w, r, "Failed to retrieve wars")
-		return
-	}
+	retrievedWars := databaseMap.GetWars()
 
 	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, retrievedWars, globalNationStatesProvider)
 	if err != nil {
@@ -377,7 +360,13 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &Page{Wars: retrievedWars, Map: renderedMap, Year: databaseMap.Year, LoggedInNation: loggedInNation, MapID: databaseMap.ID}
+	renderedWars, err := war.RenderWars(retrievedWars, globalNationStatesProvider)
+	if err != nil {
+		ErrorHandler(w, r, "Failed to render wars")
+		return
+	}
+
+	page := &Page{Wars: renderedWars, Map: renderedMap, Year: databaseMap.Year, LoggedInNation: loggedInNation, MapID: databaseMap.ID}
 
 	renderPage(w, "map.html", page)
 }

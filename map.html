@@ -36,16 +36,11 @@
     <h3>{{ .Name }}</h3>
     <dl>
       <dt>Attacker</dt>
-      <dd>{{ .Attacker.FlagAndName }}</dd>
+      <dd>{{ .Attacker }}</dd>
       <dt>Defender</dt>
-      <dd>{{.Defender.FlagAndName }}</dd>
-      {{ if .IsOngoing }}
+      <dd>{{.Defender }}</dd>
       <dt>Warscore</dt>
       <dd>{{ .ScoreDescription }}</dd>
-      {{ else }}
-      <dt>Winner</dt>
-      <dd>{{ .Advantage.FlagAndName }}</dd>
-      {{ end }}
     </dl>
     {{ end }}
     {{ end }}

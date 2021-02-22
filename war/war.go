@@ -45,26 +45,24 @@ func Abs(i int) int {
 	return i
 }
 
-func (war *War) ScoreDescription(nationStatesProvider nationstates_api.NationStatesProvider) (template.HTML, error) {
+func ScoreDescription(war databasemap.DatabaseWar, attacker nationstates_api.Nation, defender nationstates_api.Nation) template.HTML {
 
-	advantageID := WarAdvantage(DatabaseWarFromRuntimeWar(*war))
+	advantageID := WarAdvantage(war)
 
 	advantageDescription := ""
 	if advantageID != nil {
-
-		advantageNation, err := nationStatesProvider.GetNationData(*advantageID)
-		if err != nil {
-			return "", err
+		if *advantageID == attacker.Id {
+			advantageDescription = fmt.Sprintf(" in favor of %s", string(attacker.FlagAndName()))
+		} else if *advantageID == defender.Id {
+			advantageDescription = fmt.Sprintf(" in favor of %s", string(defender.FlagAndName()))
 		}
-
-		advantageDescription = fmt.Sprintf(" in favor of %s", string(advantageNation.FlagAndName()))
 	}
 
 	absoluteScore := Abs(war.Score)
-	return template.HTML(fmt.Sprintf("Currently %d%%%s", absoluteScore, advantageDescription)), nil
+	return template.HTML(fmt.Sprintf("Currently %d%%%s", absoluteScore, advantageDescription))
 }
 
-func FindOngoingWarAt(wars []War, territoryName string) *War {
+func FindOngoingWarAt(wars []databasemap.DatabaseWar, territoryName string) *databasemap.DatabaseWar {
 	for warIndex, war := range wars {
 		if war.TerritoryName == territoryName && war.IsOngoing {
 			return &wars[warIndex]
@@ -108,4 +106,46 @@ func Tick(war *databasemap.DatabaseWar, nationStatesProvider nationstates_api.Na
 	}
 
 	return false, nil
+}
+
+type RenderedWar struct {
+	IsOngoing        bool
+	Name             string
+	Attacker         template.HTML
+	Defender         template.HTML
+	ScoreDescription template.HTML
+}
+
+func RenderWar(war databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedWar, error) {
+
+	attacker, err := nationStatesProvider.GetNationData(war.Attacker)
+	if err != nil {
+		return RenderedWar{}, err
+	}
+
+	defender, err := nationStatesProvider.GetNationData(war.Defender)
+	if err != nil {
+		return RenderedWar{}, err
+	}
+
+	return RenderedWar{
+		IsOngoing:        war.IsOngoing,
+		Name:             war.ID,
+		Attacker:         attacker.FlagAndName(),
+		Defender:         defender.FlagAndName(),
+		ScoreDescription: ScoreDescription(war, *attacker, *defender),
+	}, nil
+}
+
+func RenderWars(wars []databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) ([]RenderedWar, error) {
+	renderedWars := []RenderedWar{}
+	for _, war := range wars {
+		renderedWar, err := RenderWar(war, nationStatesProvider)
+		if err != nil {
+			return []RenderedWar{}, err
+		}
+
+		renderedWars = append(renderedWars, renderedWar)
+	}
+	return renderedWars, nil
 }

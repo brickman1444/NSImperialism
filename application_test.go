@@ -59,8 +59,7 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 
 			tick(&residentNations, nationStatesProvider)
 
-			wars, err := war.GetWars(residentNations, nationStatesProvider)
-			assert.NoError(t, err)
+			wars := residentNations.GetWars()
 			assert.Len(t, wars, 1)
 
 			if !wars[0].IsOngoing {
@@ -68,11 +67,10 @@ func TestACompletedWarChangesResidenceOfTheTerritory(t *testing.T) {
 			}
 		}
 
-		wars, err := war.GetWars(residentNations, nationStatesProvider)
-		assert.NoError(t, err)
+		wars := residentNations.GetWars()
 		assert.Len(t, wars, 1)
 
-		finishedWar := war.DatabaseWarFromRuntimeWar(wars[0])
+		finishedWar := wars[0]
 		assert.False(t, finishedWar.IsOngoing)
 
 		advantageID := war.WarAdvantage(finishedWar)
@@ -112,11 +110,10 @@ func TestApplicationTickUpdatesWars(t *testing.T) {
 
 	tick(&residentNations, nationStatesProvider)
 
-	retrievedWars, err := war.GetWars(residentNations, nationStatesProvider)
-	assert.NoError(t, err)
+	retrievedWars := residentNations.GetWars()
 
 	assert.Len(t, retrievedWars, 1)
 
-	assert.Equal(t, "warForA", retrievedWars[0].Name)
+	assert.Equal(t, "warForA", retrievedWars[0].ID)
 	assert.NotEqual(t, 0, retrievedWars[0].Score)
 }

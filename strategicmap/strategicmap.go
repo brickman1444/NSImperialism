@@ -66,7 +66,7 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
-func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap, wars []war.War, nationStatesProvider nationstates_api.NationStatesProvider) (string, error) {
+func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap, wars []databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (string, error) {
 	residentNationID, err := residents.GetResident(territoryName)
 	if err != nil {
 		return "", err
@@ -86,7 +86,7 @@ func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap
 		return territoryName + " " + string(residentNation.FlagThumbnail()), nil
 	}
 
-	attacker, err := nationStatesProvider.GetNationData(war.AttackerID)
+	attacker, err := nationStatesProvider.GetNationData(war.Attacker)
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +94,7 @@ func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap
 	return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", attacker.FlagThumbnail()), nil
 }
 
-func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []war.War, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
+func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
 	renderedMap := RenderedMap{}
 
 	for _, territory := range strategicMap.Territories {

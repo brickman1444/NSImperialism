@@ -114,19 +114,19 @@ func TestATickedWarCanEnd(t *testing.T) {
 }
 
 func TestFindOngoingWarFindsAWar(t *testing.T) {
-	warAtA := NewWar("", "", "warAtA", "A")
-	warAtB := NewWar("", "", "warAtB", "A")
+	warAtA := databasemap.NewWar("", "", "warAtA", "A")
+	warAtB := databasemap.NewWar("", "", "warAtB", "A")
 
-	foundWar := FindOngoingWarAt([]War{warAtA, warAtB}, "A")
+	foundWar := FindOngoingWarAt([]databasemap.DatabaseWar{warAtA, warAtB}, "A")
 
-	assert.Equal(t, "warAtA", foundWar.Name)
+	assert.Equal(t, "warAtA", foundWar.ID)
 }
 
 func TestFindOngoingWarDoesntReturnACompletedWar(t *testing.T) {
-	war := NewWar("", "", "", "A")
+	war := databasemap.NewWar("", "", "", "A")
 	war.IsOngoing = false
 
-	foundWar := FindOngoingWarAt([]War{war}, "A")
+	foundWar := FindOngoingWarAt([]databasemap.DatabaseWar{war}, "A")
 
 	assert.Nil(t, foundWar)
 }
