@@ -4,6 +4,7 @@ import "errors"
 
 type DatabaseCell struct {
 	ID       string
+	Name     string
 	Resident string
 }
 
@@ -36,22 +37,23 @@ func NewBlankDatabaseMap() DatabaseMap {
 	}
 }
 
-func NewDatabaseMapWithTerritories(territoryNames []string) DatabaseMap {
+func NewDatabaseMapWithTerritories(territoryIDs []string) DatabaseMap {
 	databaseMap := NewBlankDatabaseMap()
-	for _, territoryName := range territoryNames {
-		databaseMap.Cells[territoryName] = DatabaseCell{territoryName, ""}
+	for _, territoryID := range territoryIDs {
+		databaseMap.Cells[territoryID] = DatabaseCell{ID: territoryID}
 	}
 	return databaseMap
 }
 
 func (databaseMap *DatabaseMap) SetResident(territoryName string, nationID string) error {
 
-	_, doesCellExist := databaseMap.Cells[territoryName]
+	territory, doesCellExist := databaseMap.Cells[territoryName]
 	if !doesCellExist {
 		return errors.New("Territory doesn't exist")
 	}
 
-	databaseMap.Cells[territoryName] = DatabaseCell{territoryName, nationID}
+	territory.Resident = nationID
+	databaseMap.Cells[territoryName] = territory
 
 	return nil
 }

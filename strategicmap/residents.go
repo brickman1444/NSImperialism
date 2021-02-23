@@ -55,7 +55,7 @@ func MakeNewRandomMap(mapLayout Map, participatingNations []string, name string)
 	})
 
 	for territoryIndex, _ := range mapLayout.Territories {
-		territoryID := mapLayout.Territories[territoryIndex].Name
+		territoryID := mapLayout.Territories[territoryIndex].ID
 		databaseMap.Cells[territoryID] = databasemap.DatabaseCell{
 			ID:       territoryID,
 			Resident: residentsForEachCell[territoryIndex],
