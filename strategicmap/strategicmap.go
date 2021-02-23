@@ -22,6 +22,7 @@ type Map struct {
 
 type RenderedTerritory struct {
 	Text        template.HTML
+	ID          string
 	LeftPercent int
 	TopPercent  int
 }
@@ -75,6 +76,13 @@ func getTerritoryDisplayName(territory databasemap.DatabaseCell) string {
 	}
 }
 
+func getTerritoryDisplayNameLink(territory databasemap.DatabaseCell, mapID string) string {
+	name := getTerritoryDisplayName(territory)
+
+	url := "/maps/" + mapID + "/territories/" + territory.ID
+	return fmt.Sprintf("<a href=\"%s\" title=\"%s\">%s</a>", url, name, name)
+}
+
 func getTextForTerritory(territoryDefinition Territory, databaseMap databasemap.DatabaseMap, nationStatesProvider nationstates_api.NationStatesProvider) (string, error) {
 
 	territory, doesTerritoryExist := databaseMap.Cells[territoryDefinition.ID]
@@ -82,8 +90,10 @@ func getTextForTerritory(territoryDefinition Territory, databaseMap databasemap.
 		return territoryDefinition.ID + " ❓", nil
 	}
 
+	territoryDisplayNameLink := getTerritoryDisplayNameLink(territory, databaseMap.ID)
+
 	if territory.Resident == "" {
-		return getTerritoryDisplayName(territory) + " ❓", nil
+		return territoryDisplayNameLink + " ❓", nil
 	}
 
 	residentNation, err := nationStatesProvider.GetNationData(territory.Resident)
@@ -93,7 +103,7 @@ func getTextForTerritory(territoryDefinition Territory, databaseMap databasemap.
 
 	war := war.FindOngoingWarAt(databaseMap.GetWars(), territoryDefinition.ID)
 	if war == nil {
-		return getTerritoryDisplayName(territory) + " " + string(residentNation.FlagThumbnail()), nil
+		return territoryDisplayNameLink + " " + string(residentNation.FlagThumbnail()), nil
 	}
 
 	attacker, err := nationStatesProvider.GetNationData(war.Attacker)
@@ -101,7 +111,7 @@ func getTextForTerritory(territoryDefinition Territory, databaseMap databasemap.
 		return "", err
 	}
 
-	return fmt.Sprint(getTerritoryDisplayName(territory), " ", residentNation.FlagThumbnail(), "⚔️", attacker.FlagThumbnail()), nil
+	return fmt.Sprint(territoryDisplayNameLink, " ", residentNation.FlagThumbnail(), "⚔️", attacker.FlagThumbnail()), nil
 }
 
 func Render(strategicMap Map, databaseMap databasemap.DatabaseMap, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
@@ -119,6 +129,7 @@ func Render(strategicMap Map, databaseMap databasemap.DatabaseMap, nationStatesP
 			LeftPercent: territoryDefinition.LeftPercent(),
 			TopPercent:  territoryDefinition.TopPercent(),
 			Text:        template.HTML(text),
+			ID:          territoryDefinition.ID,
 		}
 
 		renderedMap.Territories = append(renderedMap.Territories, renderedTerritory)

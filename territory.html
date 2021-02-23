@@ -2,7 +2,7 @@
     <h2>Territory: {{ .TerritoryName }}</h2>
     <dl>
       <dt>Map</dt>
-      <dd><a href="/maps/{{ .MapID }}">{{ .MapName }}</a></dd>
+      <dd><a href="/maps/{{ .MapID }}" title="{{ .MapName }}">{{ .MapName }}</a></dd>
       <dt>Resident</dt>
       <dd>{{ .Resident.FlagAndName }}</dd>
     </dl>
