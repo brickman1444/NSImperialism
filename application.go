@@ -19,6 +19,7 @@ import (
 	"github.com/brickman1444/NSImperialism/session"
 	"github.com/brickman1444/NSImperialism/strategicmap"
 	"github.com/brickman1444/NSImperialism/war"
+	"github.com/finnbear/moderation"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -396,6 +397,10 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := r.FormValue("map_name")
+	if moderation.IsInappropriate(name) {
+		ErrorHandler(w, r, "Please choose an appropriate name for the map.")
+		return
+	}
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 	if loggedInNation == nil {
