@@ -15,7 +15,7 @@ func TestRandomMapHasEveryCellFilled(t *testing.T) {
 	}}
 
 	for simulationIndex := 0; simulationIndex < 1000; simulationIndex++ {
-		randomMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"})
+		randomMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"}, "map name")
 		assert.NoError(t, err)
 
 		assert.NotEmpty(t, randomMap.Cells["A"].Resident)
@@ -33,7 +33,7 @@ func TestRandomMapEachNationHasAtLeastOneCell(t *testing.T) {
 	}}
 
 	for simulationIndex := 0; simulationIndex < 1000; simulationIndex++ {
-		randomMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"})
+		randomMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"}, "map name")
 		assert.NoError(t, err)
 
 		numberOfNation1Cells := 0
@@ -66,7 +66,7 @@ func TestCreatingAMapWithLessThanTwoNationsIsAnError(t *testing.T) {
 	}}
 
 	for simulationIndex := 0; simulationIndex < 1000; simulationIndex++ {
-		_, err := MakeNewRandomMap(staticMap, []string{"nation1"})
+		_, err := MakeNewRandomMap(staticMap, []string{"nation1"}, "map name")
 		assert.Error(t, err)
 	}
 }
@@ -80,7 +80,7 @@ func TestCreatingAMapMoreNationsThanCellsIsAnError(t *testing.T) {
 	}}
 
 	for simulationIndex := 0; simulationIndex < 1000; simulationIndex++ {
-		_, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2", "nation3", "nation4"})
+		_, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2", "nation3", "nation4"}, "map name")
 		assert.Error(t, err)
 	}
 }
@@ -93,7 +93,7 @@ func TestRandomMapHasNonEmptyID(t *testing.T) {
 		{"C", 0, 0},
 	}}
 
-	databaseMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"})
+	databaseMap, err := MakeNewRandomMap(staticMap, []string{"nation1", "nation2"}, "map name")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, databaseMap.ID)
 }

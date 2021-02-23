@@ -141,6 +141,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 		mapLinkDatas = append(mapLinkDatas, MapLinkData{
 			MapID:                databaseMap.ID,
+			Name:                 databasemap.GetDisplayName(databaseMap),
 			ParticipatingNations: participatingNations,
 		})
 	}
@@ -152,6 +153,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 type MapLinkData struct {
 	MapID                string
+	Name                 string
 	ParticipatingNations []nationstates_api.Nation
 }
 
@@ -393,6 +395,8 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 		participatingNationNamesCanonical = append(participatingNationNamesCanonical, nationstates_api.GetCanonicalName(nationName))
 	}
 
+	name := r.FormValue("map_name")
+
 	loggedInNation := getLoggedInNationFromCookie(r)
 	if loggedInNation == nil {
 		ErrorHandler(w, r, "You must be logged in to create a map.")
@@ -412,7 +416,7 @@ func postMapHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	databaseMap, err := strategicmap.MakeNewRandomMap(globalStrategicMap, participatingNationNamesCanonical)
+	databaseMap, err := strategicmap.MakeNewRandomMap(globalStrategicMap, participatingNationNamesCanonical, name)
 	if err != nil {
 		ErrorHandler(w, r, err.Error())
 		return

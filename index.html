@@ -2,14 +2,16 @@
   <h2>Maps</h2>
   <ul>
     {{ range .Maps }}
-    <li><a href="/maps/{{ .MapID }}" class="usa-link">{{ .MapID }}</a>{{ range .ParticipatingNations }} {{ .FlagThumbnail }}{{ end }}</li>
+    <li><a href="/maps/{{ .MapID }}" class="usa-link">{{ .Name }}</a>{{ range .ParticipatingNations }} {{ .FlagThumbnail }}{{ end }}</li>
     {{ end }}
   </ul>
   {{ if .LoggedInNation }}
   <h2>Create a New Map</h2>
   <form action="/maps" method="POST">
-    <label>Participating Nations, separated by commas<input class="usa-input" value="" id="participating_nations" placeholder="maxtopia,lilliput" type="text"
-            name="participating_nations" required="required" /></label><br>
+    <label>Map Name</label><input class="usa-input" value="" id="map_name" placeholder="Romance of the Three Kingdoms" type="text"
+            name="map_name" required="required"/></br>
+    <label>Participating Nations, separated by commas</label><input class="usa-input" value="" id="participating_nations" placeholder="maxtopia,lilliput" type="text"
+            name="participating_nations" required="required"/><br>
     <button type="submit" class="usa-button">Submit</button>
 </form>
 {{ end }}

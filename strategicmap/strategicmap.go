@@ -28,6 +28,7 @@ type RenderedTerritory struct {
 
 type RenderedMap struct {
 	Territories []RenderedTerritory
+	Name        string
 }
 
 const MAPWIDTHPX = 1536
@@ -96,6 +97,7 @@ func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap
 
 func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
 	renderedMap := RenderedMap{}
+	renderedMap.Name = databasemap.GetDisplayName(residents)
 
 	for _, territory := range strategicMap.Territories {
 

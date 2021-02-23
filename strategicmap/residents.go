@@ -27,10 +27,11 @@ func (mapsDatabase MapsDatabase) PutMap(databaseMap databasemap.DatabaseMap) err
 
 var databaseInterfaceChecker MapsInterface = MapsDatabase{}
 
-func MakeNewRandomMap(mapLayout Map, participatingNations []string) (databasemap.DatabaseMap, error) {
+func MakeNewRandomMap(mapLayout Map, participatingNations []string, name string) (databasemap.DatabaseMap, error) {
 	databaseMap := databasemap.NewBlankDatabaseMap()
 
 	databaseMap.ID = uuid.NewString()
+	databaseMap.Name = name
 
 	if len(participatingNations) < 2 {
 		return databaseMap, errors.New("Creating a map requires at least two nations")

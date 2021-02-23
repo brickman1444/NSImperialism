@@ -23,6 +23,7 @@ func NewWar(attacker string, defender string, id string, territoryName string, s
 
 type DatabaseMap struct {
 	ID    string
+	Name  string
 	Year  int
 	Cells map[string]DatabaseCell
 	Wars  map[string]DatabaseWar
@@ -91,4 +92,12 @@ func (databaseMap DatabaseMap) PutWars(warsToAdd []DatabaseWar) {
 
 		databaseMap.Wars[warToAdd.ID] = warToAdd
 	}
+}
+
+func GetDisplayName(databaseMap DatabaseMap) string {
+	if len(databaseMap.Name) > 0 {
+		return databaseMap.Name
+	}
+
+	return databaseMap.ID
 }
