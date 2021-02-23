@@ -353,9 +353,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedWars := databaseMap.GetWars()
-
-	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, retrievedWars, globalNationStatesProvider)
+	renderedMap, err := strategicmap.Render(globalStrategicMap, databaseMap, globalNationStatesProvider)
 	if err != nil {
 		ErrorHandler(w, r, "Failed to render map")
 		return
@@ -363,7 +361,7 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	renderedWars, err := war.RenderWars(retrievedWars, globalNationStatesProvider)
+	renderedWars, err := war.RenderWars(databaseMap.GetWars(), globalNationStatesProvider)
 	if err != nil {
 		ErrorHandler(w, r, "Failed to render wars")
 		return

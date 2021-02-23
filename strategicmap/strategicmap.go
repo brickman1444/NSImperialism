@@ -95,13 +95,13 @@ func getTextForTerritory(territoryName string, residents databasemap.DatabaseMap
 	return fmt.Sprint(territoryName, " ", residentNation.FlagThumbnail(), "⚔️", attacker.FlagThumbnail()), nil
 }
 
-func Render(strategicMap Map, residents databasemap.DatabaseMap, wars []databasemap.DatabaseWar, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
+func Render(strategicMap Map, residents databasemap.DatabaseMap, nationStatesProvider nationstates_api.NationStatesProvider) (RenderedMap, error) {
 	renderedMap := RenderedMap{}
 	renderedMap.Name = databasemap.GetDisplayName(residents)
 
 	for _, territory := range strategicMap.Territories {
 
-		text, err := getTextForTerritory(territory.Name, residents, wars, nationStatesProvider)
+		text, err := getTextForTerritory(territory.Name, residents, residents.GetWars(), nationStatesProvider)
 		if err != nil {
 			return RenderedMap{}, err
 		}
