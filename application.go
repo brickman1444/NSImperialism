@@ -372,6 +372,50 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 	renderPage(w, "map.html", page)
 }
 
+func getTerritoryHandler(w http.ResponseWriter, r *http.Request) {
+
+	routeVariables := mux.Vars(r)
+	mapID := routeVariables["map_id"]
+
+	databaseMap, err := globalMaps.GetMap(mapID)
+	if err != nil {
+		ErrorHandler(w, r, "Failed to retrieve map")
+		return
+	}
+
+	territoryID := routeVariables["territory_id"]
+	if !strategicmap.DoesTerritoryExist(globalStrategicMap, territoryID) {
+		ErrorHandler(w, r, "Territory does not exist")
+		return
+	}
+
+	residentNationID, err := databaseMap.GetResident(territoryID)
+	if err != nil {
+		ErrorHandler(w, r, "Failed to get resident of territory")
+		return
+	}
+
+	resident, err := globalNationStatesProvider.GetNationData(residentNationID)
+	if err != nil || resident == nil {
+		ErrorHandler(w, r, "Failed to get resident nation data")
+		return
+	}
+
+	loggedInNation := getLoggedInNationFromCookie(r)
+
+	page := &TerritoryPage{LoggedInNation: loggedInNation, Resident: *resident, MapName: databasemap.GetDisplayName(databaseMap), MapID: databaseMap.ID, TerritoryName: territoryID}
+
+	renderPage(w, "territory.html", page)
+}
+
+type TerritoryPage struct {
+	LoggedInNation *nationstates_api.Nation
+	Resident       nationstates_api.Nation
+	MapName        string
+	MapID          string
+	TerritoryName  string
+}
+
 func contains(list []string, valueToLookFor string) bool {
 	for _, element := range list {
 		if element == valueToLookFor {
@@ -468,6 +512,7 @@ func main() {
 	mux.HandleFunc("/login", loginHandler).Methods("POST")
 	mux.HandleFunc("/logout", logoutHandler).Methods("POST")
 	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
+	mux.HandleFunc("/maps/{map_id}/territories/{territory_id}", getTerritoryHandler).Methods("GET")
 	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
 
 	mux.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
