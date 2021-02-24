@@ -425,18 +425,14 @@ func getTerritoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	territoryID := routeVariables["territory_id"]
-	if !strategicmap.DoesTerritoryExist(globalStrategicMap, territoryID) {
+
+	territory, doesTerritoryExist := databaseMap.Cells[territoryID]
+	if !doesTerritoryExist {
 		ErrorHandler(w, r, "Territory does not exist")
 		return
 	}
 
-	residentNationID, err := databaseMap.GetResident(territoryID)
-	if err != nil {
-		ErrorHandler(w, r, "Failed to get resident of territory")
-		return
-	}
-
-	resident, err := globalNationStatesProvider.GetNationData(residentNationID)
+	resident, err := globalNationStatesProvider.GetNationData(territory.Resident)
 	if err != nil || resident == nil {
 		ErrorHandler(w, r, "Failed to get resident nation data")
 		return
@@ -444,7 +440,15 @@ func getTerritoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	loggedInNation := getLoggedInNationFromCookie(r)
 
-	page := &TerritoryPage{LoggedInNation: loggedInNation, Resident: *resident, MapName: databasemap.GetDisplayName(databaseMap), MapID: databaseMap.ID, TerritoryName: territoryID}
+	territoryName := strategicmap.GetTerritoryDisplayName(territory)
+
+	page := &TerritoryPage{
+		LoggedInNation: loggedInNation,
+		Resident:       *resident,
+		MapName:        databasemap.GetDisplayName(databaseMap),
+		MapID:          databaseMap.ID,
+		TerritoryName:  territoryName,
+		TerritoryID:    territoryID}
 
 	renderPage(w, "territory.html", page)
 }
@@ -455,6 +459,7 @@ type TerritoryPage struct {
 	MapName        string
 	MapID          string
 	TerritoryName  string
+	TerritoryID    string
 }
 
 func contains(list []string, valueToLookFor string) bool {
@@ -532,6 +537,54 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, message string) {
 	renderPage(w, "error.html", page)
 }
 
+func renameTerritoryHandler(w http.ResponseWriter, r *http.Request) {
+
+	loggedInNation := getLoggedInNationFromCookie(r)
+	if loggedInNation == nil {
+		ErrorHandler(w, r, "You must be logged in to rename a territory.")
+		return
+	}
+
+	name := r.FormValue("territory_name")
+	if len(name) == 0 {
+		ErrorHandler(w, r, "Name was empty")
+		return
+	}
+
+	if moderation.IsInappropriate(name) {
+		ErrorHandler(w, r, "Please choose an appropriate name for the territory.")
+		return
+	}
+
+	routeVariables := mux.Vars(r)
+	mapID := routeVariables["map_id"]
+	databaseMap, err := globalMaps.GetMap(mapID)
+	if err != nil {
+		ErrorHandler(w, r, "Failed to get map")
+		return
+	}
+
+	territoryID := routeVariables["territory_id"]
+	territory, doesTerritoryExist := databaseMap.Cells[territoryID]
+	if !doesTerritoryExist {
+		ErrorHandler(w, r, "Territory does not exist")
+		return
+	}
+
+	if territory.Resident != loggedInNation.Id {
+		ErrorHandler(w, r, "You must control a territory in order to rename it.")
+		return
+	}
+
+	territory.Name = name
+
+	databaseMap.Cells[territoryID] = territory
+
+	err = globalMaps.PutMap(databaseMap)
+
+	http.Redirect(w, r, "/maps/"+mapID+"/territories/"+territoryID, http.StatusSeeOther)
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -554,6 +607,7 @@ func main() {
 	mux.HandleFunc("/logout", logoutHandler).Methods("POST")
 	mux.HandleFunc("/maps/{id}", getMapHandler).Methods("GET")
 	mux.HandleFunc("/maps/{map_id}/territories/{territory_id}", getTerritoryHandler).Methods("GET")
+	mux.HandleFunc("/maps/{map_id}/territories/{territory_id}/name", renameTerritoryHandler).Methods("POST")
 	mux.HandleFunc("/maps", postMapHandler).Methods("POST")
 
 	mux.NotFoundHandler = http.HandlerFunc(NotFoundHandler)

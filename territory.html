@@ -6,4 +6,15 @@
       <dt>Resident</dt>
       <dd>{{ .Resident.FlagAndName }}</dd>
     </dl>
+    {{ if .LoggedInNation }}
+    {{ if eq .Resident.Id .LoggedInNation.Id }}
+    <h2>Rename the Territory</h2>
+    <form action="/maps/{{ .MapID }}/territories/{{ .TerritoryID }}/name" method="POST">
+      <label>New Name</label><input class="usa-input" value="" id="territory_name" placeholder="Upper Maxtopia"
+        type="text" name="territory_name" required="required" /></br>
+      <br>
+      <button type="submit" class="usa-button">Submit</button>
+    </form>
+    {{ end }}
+    {{ end }}
   </main>
