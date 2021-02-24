@@ -17,8 +17,12 @@
     {{ if .LoggedInNation }}
     <h2>Declare War</h2>
     <form action="/war/{{ .MapID }}" method="POST">
-      <label for="target">Target:</label><input type="text" id="target" name="target" placeholder="e.g. A" required="required" maxlength="2"
-        pattern="[A-R]"><br>
+      <label for="target">Target:</label>
+      <select name="target" id="target" required="required">
+        {{ range .WarTargets }}
+        <option value="{{ .ID }}">{{ .Name }}</option>
+        {{ end }}
+      </select><br>
       <label for="occasion">Occasion for War:</label>
       <select name="occasion" id="occasion" required="required">
         <option value="Conquest of">Conquest</option>

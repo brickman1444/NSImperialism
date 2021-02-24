@@ -168,6 +168,23 @@ type Page struct {
 	Error          string
 }
 
+func canAttack(nation nationstates_api.Nation, territory databasemap.DatabaseCell, wars []databasemap.DatabaseWar) (bool, string) {
+	if territory.Resident == "" {
+		return false, fmt.Sprintf("No nation resides in %s", territory.ID)
+	}
+
+	if territory.Resident == nation.Id {
+		return false, "You can't attack yourself"
+	}
+
+	currentWar := war.FindOngoingWarAt(wars, territory.ID)
+	if currentWar != nil {
+		return false, fmt.Sprintf("There is already a war at %s", territory.ID)
+	}
+
+	return true, ""
+}
+
 func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	attacker := getLoggedInNationFromCookie(r)
@@ -187,27 +204,15 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	target := r.FormValue("target")
 
-	defenderID, err := databaseMap.GetResident(target)
-	if err != nil {
-		ErrorHandler(w, r, fmt.Sprintf("Failed to get defender for %s", target))
+	targetTerritory, doesTerritoryExist := databaseMap.Cells[target]
+	if !doesTerritoryExist {
+		ErrorHandler(w, r, "That territory doesn't exist")
 		return
 	}
 
-	if defenderID == "" {
-		ErrorHandler(w, r, fmt.Sprintf("No nation resides in %s", target))
-		return
-	}
-
-	if attacker.Id == defenderID {
-		ErrorHandler(w, r, fmt.Sprintf("You can't attack yourself"))
-		return
-	}
-
-	retrievedWars := databaseMap.GetWars()
-
-	currentWar := war.FindOngoingWarAt(retrievedWars, target)
-	if currentWar != nil {
-		ErrorHandler(w, r, fmt.Sprintf("There is already a war at %s", target))
+	canAttack, canAttackReason := canAttack(*attacker, targetTerritory, databaseMap.GetWars())
+	if !canAttack {
+		ErrorHandler(w, r, canAttackReason)
 		return
 	}
 
@@ -219,9 +224,9 @@ func warHandler(w http.ResponseWriter, r *http.Request) {
 
 	warName := fmt.Sprintf("The %s %s %s", attacker.Demonym, occasion, target)
 
-	defender, err := nationstates_api.GetNationData(defenderID)
+	defender, err := nationstates_api.GetNationData(targetTerritory.Resident)
 	if err != nil {
-		ErrorHandler(w, r, fmt.Sprintf("Failed to get defender data for %s", defenderID))
+		ErrorHandler(w, r, fmt.Sprintf("Failed to get defender data for %s", targetTerritory.Resident))
 		return
 	}
 
@@ -342,6 +347,26 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+func getWarTargets(nation *nationstates_api.Nation, databaseMap databasemap.DatabaseMap) []WarTarget {
+	if nation == nil {
+		return []WarTarget{}
+	}
+
+	warTargets := []WarTarget{}
+	for _, territory := range databaseMap.Cells {
+
+		canAttack, _ := canAttack(*nation, territory, databaseMap.GetWars())
+		if canAttack {
+			warTargets = append(warTargets, WarTarget{
+				ID:   territory.ID,
+				Name: strategicmap.GetTerritoryDisplayName(territory),
+			})
+		}
+	}
+
+	return warTargets
+}
+
 func getMapHandler(w http.ResponseWriter, r *http.Request) {
 
 	routeVariables := mux.Vars(r)
@@ -367,9 +392,25 @@ func getMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := &Page{Wars: renderedWars, Map: renderedMap, Year: databaseMap.Year, LoggedInNation: loggedInNation, MapID: databaseMap.ID}
+	warTargets := getWarTargets(loggedInNation, databaseMap)
+
+	page := &MapPage{Wars: renderedWars, Map: renderedMap, Year: databaseMap.Year, LoggedInNation: loggedInNation, MapID: databaseMap.ID, WarTargets: warTargets}
 
 	renderPage(w, "map.html", page)
+}
+
+type WarTarget struct {
+	ID   string
+	Name string
+}
+
+type MapPage struct {
+	Wars           []war.RenderedWar
+	Map            strategicmap.RenderedMap
+	Year           int
+	LoggedInNation *nationstates_api.Nation
+	MapID          string
+	WarTargets     []WarTarget
 }
 
 func getTerritoryHandler(w http.ResponseWriter, r *http.Request) {

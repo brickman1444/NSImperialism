@@ -68,7 +68,7 @@ func (territory Territory) TopPercent() int {
 	return divideAndRoundToNearestInteger(territory.TopPX, MAPHEIGHTPX)
 }
 
-func getTerritoryDisplayName(territory databasemap.DatabaseCell) string {
+func GetTerritoryDisplayName(territory databasemap.DatabaseCell) string {
 	if len(territory.Name) != 0 {
 		return territory.Name
 	} else {
@@ -77,7 +77,7 @@ func getTerritoryDisplayName(territory databasemap.DatabaseCell) string {
 }
 
 func getTerritoryDisplayNameLink(territory databasemap.DatabaseCell, mapID string) string {
-	name := getTerritoryDisplayName(territory)
+	name := GetTerritoryDisplayName(territory)
 
 	url := "/maps/" + mapID + "/territories/" + territory.ID
 	return fmt.Sprintf("<a href=\"%s\" title=\"%s\">%s</a>", url, name, name)
