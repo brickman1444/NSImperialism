@@ -1,5 +1,5 @@
 <main>
-  <h2>Maps</h2>
+  <h1>Maps</h1>
   <ul>
     {{ range .Maps }}
     <li><a href="/maps/{{ .MapID }}">{{ .Name }}</a>{{ range .ParticipatingNations }} {{ .FlagThumbnail }}{{ end }}</li>

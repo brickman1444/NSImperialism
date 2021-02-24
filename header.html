@@ -9,10 +9,15 @@
 </head>
 
 <body class="usa-section--dark">
-    <header class="usa-header">
-        <h1><a href="/">NSImperialism (Alpha)</a></h1>
+
+    <header class="usa-header" role="banner">
+            <div class="usa-logo" id="basic-logo">
+              <em class="usa-logo-text">
+                <a href="/" title="Home" aria-label="Home">NSImperialism (Alpha)</a>
+              </em>
+        </div>
         <p><small>The server may reset the state of the game at any time.</small></p>
-    </header>
+      </header>
 
     <header class="usa-header">
         {{ if .LoggedInNation }}
