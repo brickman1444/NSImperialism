@@ -1,20 +1,5 @@
 @charset "UTF-8";
 
-.under-attack {
-    background-color:red;
-    color:red;
-}
-
-.favorable {
-    font-weight: bold;
-    color:#73b3e7;
-}
-
-.unfavorable {
-    font-weight: bold;
-    color:#e41d3d;
-}
-
 .flag-thumb {
     max-height:13px;
     max-width:20px;
